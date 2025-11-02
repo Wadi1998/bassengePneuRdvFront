@@ -1,0 +1,163 @@
+﻿<section class="max-w-7xl mx-auto px-4 py-8 text-slate-100">
+
+  <!-- Header -->
+  <div class="flex items-center justify-between mb-6">
+    <div>
+      <h2 class="text-3xl font-extrabold tracking-tight">Clients</h2>
+      <p class="text-sm text-slate-300 mt-1">
+        Gérez vos fiches clients et retrouvez-les en un clin d’œil.
+      </p>
+    </div>
+    <span class="badge-count">
+      <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M15 19a6 6 0 0 0-12 0"/>
+        <circle cx="9" cy="7" r="4"/>
+      </svg>
+      {{ filtered.length }} client(s)
+    </span>
+  </div>
+
+  <!-- Formulaire + recherche -->
+  <div class="card-dark p-6 md:p-7 mb-8">
+    <!--
+      Grid :
+      - mobile: 1 colonne
+      - md:     12 colonnes, le bouton prend toute la ligne (col-span-12)
+      - xl:     14 colonnes → 3/3/3/3/2 pour bouton (plus d’espace)
+    -->
+    <form
+      [formGroup]="form"
+      (ngSubmit)="add()"
+      class="grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-x-6 md:gap-y-4 xl:gap-x-8 items-start
+             xl:[grid-template-columns:repeat(14,minmax(0,1fr))]"
+    >
+
+      <!-- Prénom -->
+      <div class="md:col-span-6 xl:col-span-3">
+        <div class="field">
+          <span class="field-icon">
+            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M15 19a6 6 0 0 0-12 0"/><circle cx="9" cy="7" r="4"/>
+            </svg>
+          </span>
+          <input #firstNameInput formControlName="firstName" placeholder="Prénom *" class="field-input" />
+        </div>
+        <div class="text-xs text-red-400 mt-1" *ngIf="form.get('firstName')?.touched && form.get('firstName')?.invalid">
+          Le prénom est obligatoire.
+        </div>
+      </div>
+
+      <!-- Nom -->
+      <div class="md:col-span-6 xl:col-span-3">
+        <div class="field">
+          <span class="field-icon">
+            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M15 19a6 6 0 0 0-12 0"/><circle cx="9" cy="7" r="4"/>
+            </svg>
+          </span>
+          <input formControlName="name" placeholder="Nom *" class="field-input" />
+        </div>
+        <div class="text-xs text-red-400 mt-1" *ngIf="form.get('name')?.touched && form.get('name')?.invalid">
+          Le nom est obligatoire.
+        </div>
+      </div>
+
+      <!-- Téléphone -->
+      <div class="md:col-span-6 xl:col-span-3">
+        <div class="field">
+          <span class="field-icon">
+            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 2.09 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.12.9.32 1.77.59 2.6a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.48-1.16a2 2 0 0 1 2.11-.45c.83.27 1.7.47 2.6.59A2 2 0 0 1 22 16.92z"/>
+            </svg>
+          </span>
+          <input formControlName="phone" inputmode="tel" placeholder="Téléphone (BE) *" class="field-input" />
+        </div>
+        <div class="text-xs text-red-400 mt-1" *ngIf="form.get('phone')?.touched && form.get('phone')?.hasError('bePhone')">
+          Numéro belge invalide (ex. 0470 12 34 56 ou 02 123 45 67).
+        </div>
+      </div>
+
+      <!-- Véhicule -->
+      <div class="md:col-span-6 xl:col-span-3">
+        <div class="field">
+          <span class="field-icon">
+            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 13l2-5h14l2 5"/><circle cx="7.5" cy="17.5" r="2"/><circle cx="16.5" cy="17.5" r="2"/>
+            </svg>
+          </span>
+          <input formControlName="vehicle" placeholder="Véhicule (ex: Golf 7)" class="field-input" />
+        </div>
+      </div>
+
+      <!-- Bouton : ligne dédiée en md, inline en xl avec 2 colonnes -->
+      <div class="md:col-span-12 xl:col-span-2 xl:justify-self-end xl:pl-4">
+        <button
+          type="submit"
+          class="btn-cta h-11 w-full xl:w-auto justify-center min-w-[150px]"
+          [disabled]="form.invalid"
+        >
+          <span>👤+</span><span>Ajouter</span>
+        </button>
+      </div>
+
+      <!-- Barre de recherche -->
+      <div class="md:col-span-12">
+        <div class="field">
+          <span class="field-icon">
+            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/>
+            </svg>
+          </span>
+          <input
+            [formControl]="search"
+            placeholder="Rechercher (nom, prénom, téléphone, véhicule)"
+            class="field-input-ghost"
+          />
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <!-- Liste des clients -->
+  <div *ngIf="filtered.length; else empty" class="bg-white/5 border border-white/10 rounded-2xl divide-y divide-white/10">
+    <div *ngFor="let c of filtered; trackBy: trackById"
+         class="px-4 md:px-5 py-4 flex items-center justify-between hover:bg-white/[.04] transition">
+      <div class="flex items-center gap-3 min-w-0">
+        <div class="h-10 w-10 rounded-full bg-brand-red flex items-center justify-center font-bold text-white">
+          {{ initials(c) | uppercase }}
+        </div>
+        <div class="min-w-0">
+          <div class="font-semibold truncate">{{ c.firstName }} {{ c.name }}</div>
+          <div class="text-sm text-slate-300 truncate">
+            <a class="hover:underline" [href]="'tel:' + c.phone">{{ phoneDisplay(c.phone) }}</a>
+            <span *ngIf="c.vehicle"> • {{ c.vehicle }}</span>
+          </div>
+        </div>
+      </div>
+      <div class="flex items-center gap-2 shrink-0">
+        <button class="btn-danger-outline" (click)="remove(c.id)">
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 6h18M8 6v12m8-12v12M5 6l1 14a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2l1-14"/>
+            <path d="M10 6l1-2h2l1 2"/>
+          </svg>
+          Supprimer
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Empty state -->
+  <ng-template #empty>
+    <div class="card-dark p-8 text-center">
+      <div class="text-4xl mb-2">🧑‍🔧</div>
+      <h3 class="text-lg font-semibold">Aucun client trouvé</h3>
+      <p class="text-slate-300 text-sm mt-1">
+        Ajoutez un client avec le formulaire ci-dessus ou recherchez autrement.
+      </p>
+      <button class="btn-cta mt-4" (click)="focusFirstInput()">
+        <span>👤+</span><span>Nouveau client</span>
+      </button>
+    </div>
+  </ng-template>
+
+</section>

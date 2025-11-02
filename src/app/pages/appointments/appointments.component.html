@@ -1,0 +1,184 @@
+﻿<section class="max-w-7xl mx-auto px-4 py-8 text-slate-100">
+  <!-- Titre + badge date -->
+  <div class="flex items-center justify-between mb-6">
+    <h2 class="text-3xl font-extrabold tracking-tight">Prise-rendez-vous</h2>
+    <span class="inline-flex items-center gap-2 text-xs px-3 py-1 rounded-full bg-white/5 border border-white/10">
+      <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M3 12a9 9 0 1 0 18 0 9 9 0 0 0-18 0Z"/>
+        <path d="M12 7v5l3 3"/>
+      </svg>
+      {{ date }}
+    </span>
+  </div>
+
+  <!-- Toolbar -->
+  <div class="rounded-2xl bg-white/[0.04] border border-white/10 p-4 md:p-5 mb-3">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-3">
+
+      <!-- Sélection client -->
+      <div class="lg:col-span-3 relative">
+        <button type="button" class="h-11 w-full px-3 rounded-xl bg-white/5 border border-white/10 text-left hover:bg-white/10 transition"
+                (click)="showClientPicker = !showClientPicker">
+          <ng-container *ngIf="!selectedClient; else clientSelected">
+            — Sélectionner un client —
+          </ng-container>
+          <ng-template #clientSelected>
+            <div class="flex items-center justify-between">
+              <span class="truncate">{{ fullName(selectedClient) }}</span>
+              <span class="text-xs text-slate-300 ml-2 truncate">{{ selectedClient?.phone }}</span>
+            </div>
+          </ng-template>
+        </button>
+
+        <!-- Popover clients -->
+        <div *ngIf="showClientPicker" class="absolute z-20 mt-2 w-full rounded-xl border border-white/10 bg-slate-900/95 backdrop-blur p-2 shadow-xl">
+          <div class="relative mb-2">
+            <span class="absolute left-3 top-1/2 -translate-y-1/2 opacity-70">
+              <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/>
+              </svg>
+            </span>
+            <input class="h-10 w-full pl-9 pr-3 rounded-lg bg-white/5 border border-white/10 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-white/20"
+                   placeholder="Rechercher un client..."
+                   [(ngModel)]="clientSearch" />
+          </div>
+
+          <div class="max-h-72 overflow-auto space-y-1 pr-1">
+            <button *ngFor="let c of filteredClients" type="button" (click)="pickClient(c)"
+                    class="w-full text-left rounded-lg px-3 py-2 hover:bg-white/10 transition flex items-center gap-3">
+              <div class="h-8 w-8 rounded-full bg-white/10 flex items-center justify-center font-semibold">
+                {{ initialsOf(c) | uppercase }}
+              </div>
+              <div class="min-w-0">
+                <div class="font-medium truncate">{{ c.firstName }} {{ c.name }}</div>
+                <div class="text-xs text-slate-300 truncate">
+                  {{ c.phone }} <span *ngIf="c.vehicle">• {{ c.vehicle }}</span>
+                </div>
+              </div>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Date -->
+      <div class="lg:col-span-3">
+        <div class="relative">
+          <span class="absolute left-3 top-1/2 -translate-y-1/2 opacity-70">
+            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>
+            </svg>
+          </span>
+          <input type="date" class="h-11 w-full pl-9 pr-3 rounded-xl bg-white/5 border border-white/10 focus:outline-none focus:ring-2 focus:ring-white/20"
+                 [ngModel]="date" (ngModelChange)="setDate($event)" />
+        </div>
+      </div>
+
+      <!-- Durée -->
+      <div class="lg:col-span-3">
+        <div class="flex h-11 items-center rounded-xl bg-white/5 border border-white/10 p-1 gap-1">
+          <button *ngFor="let d of durations" type="button" (click)="setDuration(d)"
+                  class="px-3 h-9 rounded-lg text-sm transition"
+                  [ngClass]="duration === d ? 'bg-white/10 ring-1 ring-white/20' : 'hover:bg-white/10'">
+            {{ d }} min
+          </button>
+        </div>
+      </div>
+
+      <!-- Type de service (OBLIGATOIRE) -->
+      <div class="lg:col-span-6">
+        <div class="relative">
+          <span class="absolute left-3 top-1/2 -translate-y-1/2 opacity-70">
+            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 7h18M5 7l2 12h10l2-12M10 11h4"/>
+            </svg>
+          </span>
+          <input
+            class="h-11 w-full pl-9 pr-3 rounded-xl border placeholder:text-slate-400 focus:outline-none focus:ring-2 bg-white/5"
+            [class.border-white/10]="serviceValid"
+          [class.border-rose-400/40]="!serviceValid && showServiceError"
+          [class.focus:ring-white/20]="serviceValid"
+          [class.focus:ring-rose-400/30]="!serviceValid"
+          placeholder="Type de service (obligatoire)"
+          [(ngModel)]="serviceType"
+          (ngModelChange)="showServiceError = false"
+          />
+          <div *ngIf="!serviceValid && showServiceError" class="mt-1 text-xs text-rose-300">
+            Saisis un type de service avant de réserver.
+          </div>
+        </div>
+      </div>
+
+
+      <!-- Navigation jours -->
+      <div class="lg:col-span-3 flex gap-2">
+        <button class="h-11 px-4 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition" (click)="prevDay()">‹ Jour -1</button>
+        <button class="h-11 px-4 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition" (click)="nextDay()">Jour +1 ›</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Fiche client sélectionné -->
+  <div *ngIf="selectedClient" class="rounded-xl bg-white/[0.04] border border-white/10 p-4 mb-6">
+    <div class="flex flex-wrap items-center gap-3">
+      <div class="h-9 w-9 rounded-full bg-white/10 flex items-center justify-center font-semibold">
+        {{ initialsOf(selectedClient) | uppercase }}
+      </div>
+      <div class="min-w-0">
+        <div class="font-semibold truncate">{{ fullName(selectedClient) }}</div>
+        <div class="text-sm text-slate-300 truncate">
+          <a class="hover:underline" [href]="'tel:' + selectedClient.phone">{{ selectedClient.phone }}</a>
+          <span *ngIf="selectedClient.vehicle"> • {{ selectedClient.vehicle }}</span>
+        </div>
+      </div>
+      <button class="ml-auto h-9 px-3 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 text-sm" (click)="clearClient()">Changer</button>
+    </div>
+  </div>
+
+  <!-- Toujours deux colonnes A & B -->
+  <div class="grid md:grid-cols-2 gap-5">
+    <!-- A -->
+    <div class="rounded-2xl bg-white/[0.04] border border-white/10 p-4">
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="text-lg font-semibold">Créneaux (A)</h3>
+        <span class="text-xs text-slate-300">Pas de 15 min — durée {{ duration }} min</span>
+      </div>
+      <ng-container *ngIf="showSlots">
+        <app-slot-picker
+          [date]="date"
+          [duration]="duration"
+          [bay]="'A'"
+          [items]="items"
+          [serviceType]="serviceType"
+          [canBook]="canBook"
+          [needService]="!serviceValid"
+          [needClient]="!clientValid"
+          (pick)="onPickA($event)"
+          (blocked)="onBlocked($event)"
+        ></app-slot-picker>
+      </ng-container>
+    </div>
+
+    <!-- B -->
+    <div class="rounded-2xl bg-white/[0.04] border border-white/10 p-4">
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="text-lg font-semibold">Créneaux (B)</h3>
+        <span class="text-xs text-slate-300">Pas de 15 min — durée {{ duration }} min</span>
+      </div>
+      <ng-container *ngIf="showSlots">
+        <app-slot-picker
+          [date]="date"
+          [duration]="duration"
+          [bay]="'B'"
+          [items]="items"
+          [serviceType]="serviceType"
+          [canBook]="canBook"
+          [needService]="!serviceValid"
+          [needClient]="!clientValid"
+          (pick)="onPickB($event)"
+          (blocked)="onBlocked($event)"
+        ></app-slot-picker>
+      </ng-container>
+    </div>
+  </div>
+</section>

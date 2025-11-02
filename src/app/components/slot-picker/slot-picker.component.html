@@ -1,0 +1,70 @@
+﻿<!-- Liste scrollable de créneaux -->
+<div class="h-[560px] overflow-auto pr-1 space-y-2">
+  <button
+    *ngFor="let s of slots; trackBy: trackByTime"
+    type="button"
+    (click)="onClick(s.time, s.state)"
+    class="w-full text-left rounded-xl border px-3 py-3 transition
+           flex items-center gap-3
+           border-white/10
+           bg-white/5
+           hover:bg-white/10"
+    [ngClass]="{
+      'ring-1 ring-emerald-400/30': s.state === 'free' && canBook,
+      'ring-1 ring-rose-400/30': s.state === 'busy',
+      'ring-1 ring-amber-400/30': (s.state === 'free' && !canBook) || s.state === 'indispo',
+      'opacity-60 cursor-not-allowed': s.state !== 'free'
+    }"
+    [title]="(s.state === 'free' && !canBook)
+              ? (needService && needClient ? 'Choisir client et service'
+                 : (needService ? 'Choisir un type de service' : 'Choisir un client'))
+              : (s.note || '')"
+  >
+    <!-- Heure -->
+    <span class="w-16 shrink-0 font-mono tracking-tight text-sm opacity-90">
+      {{ s.time }}
+    </span>
+
+    <!-- Libellé + infos -->
+    <div class="flex-1 min-w-0">
+      <div class="truncate"
+           [ngClass]="{
+             'text-slate-200': s.state === 'free',
+             'text-slate-300': s.state === 'busy',
+             'text-slate-400': s.state === 'past' || s.state === 'indispo'
+           }">
+        <ng-container [ngSwitch]="s.state">
+          <span *ngSwitchCase="'free'">Libre</span>
+          <span *ngSwitchCase="'busy'">
+            {{ s.clientName || 'Client inconnu' }}
+            <ng-container *ngIf="s.serviceType"> — {{ s.serviceType }}</ng-container>
+          </span>
+          <span *ngSwitchCase="'indispo'">Plage indisponible</span>
+          <span *ngSwitchCase="'past'">Passé</span>
+        </ng-container>
+      </div>
+    </div>
+
+    <!-- Tag à droite -->
+    <span
+      class="text-xs px-2.5 py-1 rounded-full border"
+      [ngClass]="{
+        'border-emerald-400/40 bg-emerald-400/10 text-emerald-300': s.state === 'free' && canBook,
+        'border-rose-400/40 bg-rose-400/10 text-rose-300': s.state === 'busy',
+        'border-amber-400/40 bg-amber-400/10 text-amber-300': (s.state === 'free' && !canBook) || s.state === 'indispo',
+        'border-white/20 bg-white/5 text-slate-400': s.state === 'past'
+      }">
+      <ng-container [ngSwitch]="s.state">
+        <span *ngSwitchCase="'free'">
+          {{ canBook
+          ? ('Réserver — ' + (serviceType || 'Service'))
+          : (needService && needClient ? 'Choisir client & service'
+            : (needService ? 'Choisir service' : 'Choisir client')) }}
+        </span>
+        <span *ngSwitchCase="'busy'">Occupé</span>
+        <span *ngSwitchCase="'indispo'">Indispo</span>
+        <span *ngSwitchCase="'past'">Passé</span>
+      </ng-container>
+    </span>
+  </button>
+</div>

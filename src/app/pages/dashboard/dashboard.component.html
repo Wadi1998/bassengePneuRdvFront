@@ -1,0 +1,175 @@
+﻿<!-- Barre haute (date + nav + toggle) -->
+<div class="rounded-2xl border border-white/10 bg-white/5 p-4 mb-6">
+  <div class="grid lg:grid-cols-2 gap-4">
+    <!-- Calendrier -->
+    <div class="flex items-center gap-3">
+      <div class="flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-2 w-full">
+        <span class="opacity-75">📅</span>
+        <input
+          type="date"
+          class="bg-transparent outline-none w-full"
+          [ngModel]="date"
+          (ngModelChange)="setDate($event)"
+          [disabled]="loading"
+        />
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="flex items-center gap-2 justify-end">
+      <div class="rounded-xl border border-white/10 bg-white/5 p-1">
+        <button class="px-3 py-1 rounded-lg text-sm"
+                [class.bg-white/20]="viewMode==='grid'"
+        (click)="viewMode='grid'">Grille 15′</button>
+        <button class="px-3 py-1 rounded-lg text-sm"
+                [class.bg-white/20]="viewMode==='list'"
+        (click)="viewMode='list'">Liste (début → fin)</button>
+      </div>
+
+      <button class="rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 px-3 py-2"
+              (click)="prevDay()" [disabled]="loading">‹ Jour -1</button>
+      <button class="rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 px-3 py-2"
+              (click)="today()" [disabled]="loading">Aujourd’hui</button>
+      <button class="rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 px-3 py-2"
+              (click)="nextDay()" [disabled]="loading">Jour +1 ›</button>
+    </div>
+  </div>
+</div>
+
+<!-- === VUE GRILLE === -->
+<div *ngIf="viewMode==='grid'" class="grid md:grid-cols-2 gap-6">
+  <!-- Col A -->
+  <section class="rounded-2xl border border-white/10 bg-white/5 p-3">
+    <div class="flex items-center justify-between px-2 py-2">
+      <h2 class="font-semibold text-lg">Créneaux (A)</h2>
+      <span class="text-xs opacity-70">{{ slots('A').length }} créneaux</span>
+    </div>
+
+    <div class="h-[560px] overflow-auto pr-1 space-y-2">
+      <div *ngFor="let s of slots('A')"
+           class="rounded-xl border px-3 py-3 flex items-center justify-between transition"
+           [ngClass]="
+             s.state === 'busy'
+               ? 'border-emerald-500/30 bg-emerald-900/30 text-emerald-200'
+               : (s.state === 'free'
+                   ? 'border-rose-500/30 bg-rose-900/30 text-rose-200'
+                   : 'border-white/10 bg-white/5 text-slate-400')
+           ">
+        <div class="flex items-center gap-3">
+          <span class="w-16 font-mono text-sm">{{ s.time }}</span>
+          <div class="min-w-0">
+            <div *ngIf="s.appt; else libreA" class="truncate font-medium">
+              {{ s.appt.clientName || 'Client inconnu' }}
+              <span class="opacity-70" *ngIf="s.appt.serviceType">— {{ s.appt.serviceType }}</span>
+            </div>
+            <ng-template #libreA>
+              <div class="text-xs italic">Libre</div>
+            </ng-template>
+            <div *ngIf="s.appt" class="text-xs opacity-70">{{ s.appt.duration }} min</div>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <span *ngIf="s.state==='past'" class="text-xs">Passé</span>
+          <button *ngIf="s.appt" class="ml-2 text-rose-200 hover:text-rose-100 disabled:opacity-50"
+                  title="Supprimer" (click)="remove(s.appt)"
+                  [disabled]="loading || deletingId === s.appt.id || !s.appt.id">🗑️</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Col B -->
+  <section class="rounded-2xl border border-white/10 bg-white/5 p-3">
+    <div class="flex items-center justify-between px-2 py-2">
+      <h2 class="font-semibold text-lg">Créneaux (B)</h2>
+      <span class="text-xs opacity-70">{{ slots('B').length }} créneaux</span>
+    </div>
+
+    <div class="h-[560px] overflow-auto pr-1 space-y-2">
+      <div *ngFor="let s of slots('B')"
+           class="rounded-xl border px-3 py-3 flex items-center justify-between transition"
+           [ngClass]="
+             s.state === 'busy'
+               ? 'border-emerald-500/30 bg-emerald-900/30 text-emerald-200'
+               : (s.state === 'free'
+                   ? 'border-rose-500/30 bg-rose-900/30 text-rose-200'
+                   : 'border-white/10 bg-white/5 text-slate-400')
+           ">
+        <div class="flex items-center gap-3">
+          <span class="w-16 font-mono text-sm">{{ s.time }}</span>
+          <div class="min-w-0">
+            <div *ngIf="s.appt; else libreB" class="truncate font-medium">
+              {{ s.appt.clientName || 'Client inconnu' }}
+              <span class="opacity-70" *ngIf="s.appt.serviceType">— {{ s.appt.serviceType }}</span>
+            </div>
+            <ng-template #libreB>
+              <div class="text-xs italic">Libre</div>
+            </ng-template>
+            <div *ngIf="s.appt" class="text-xs opacity-70">{{ s.appt.duration }} min</div>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <span *ngIf="s.state==='past'" class="text-xs">Passé</span>
+          <button *ngIf="s.appt" class="ml-2 text-rose-200 hover:text-rose-100 disabled:opacity-50"
+                  title="Supprimer" (click)="remove(s.appt)"
+                  [disabled]="loading || deletingId === s.appt.id || !s.appt.id">🗑️</button>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- === VUE LISTE (début → fin) === -->
+<div *ngIf="viewMode==='list'" class="grid md:grid-cols-2 gap-6">
+  <!-- A -->
+  <section class="rounded-2xl border border-white/10 bg-white/5 p-3">
+    <div class="flex items-center justify-between px-2 py-2">
+      <h2 class="font-semibold text-lg">Rendez-vous (A)</h2>
+      <span class="text-xs opacity-70">{{ listA().length }} RDV</span>
+    </div>
+
+    <div class="space-y-2">
+      <div *ngFor="let a of listA()"
+           class="rounded-xl border border-emerald-500/30 bg-emerald-900/30 text-emerald-200 px-3 py-3 flex items-center justify-between">
+        <div class="flex items-center gap-3 min-w-0">
+          <span class="w-28 font-mono text-sm">{{ a.time }} → {{ endTime(a.time, a.duration) }}</span>
+          <div class="min-w-0">
+            <div class="truncate font-medium">{{ a.clientName || 'Client inconnu' }}</div>
+            <div class="text-xs opacity-80 truncate">{{ a.serviceType || 'Service' }} — {{ a.duration }} min</div>
+          </div>
+        </div>
+        <button class="ml-2 text-rose-200 hover:text-rose-100 disabled:opacity-50"
+                title="Supprimer" (click)="remove(a)"
+                [disabled]="loading || deletingId === a.id || !a.id">🗑️</button>
+      </div>
+      <div *ngIf="!listA().length" class="px-3 py-6 text-sm opacity-70">Aucun rendez-vous sur le pont A.</div>
+    </div>
+  </section>
+
+  <!-- B -->
+  <section class="rounded-2xl border border-white/10 bg-white/5 p-3">
+    <div class="flex items-center justify-between px-2 py-2">
+      <h2 class="font-semibold text-lg">Rendez-vous (B)</h2>
+      <span class="text-xs opacity-70">{{ listB().length }} RDV</span>
+    </div>
+
+    <div class="space-y-2">
+      <div *ngFor="let a of listB()"
+           class="rounded-xl border border-emerald-500/30 bg-emerald-900/30 text-emerald-200 px-3 py-3 flex items-center justify-between">
+        <div class="flex items-center gap-3 min-w-0">
+          <span class="w-28 font-mono text-sm">{{ a.time }} → {{ endTime(a.time, a.duration) }}</span>
+          <div class="min-w-0">
+            <div class="truncate font-medium">{{ a.clientName || 'Client inconnu' }}</div>
+            <div class="text-xs opacity-80 truncate">{{ a.serviceType || 'Service' }} — {{ a.duration }} min</div>
+          </div>
+        </div>
+        <button class="ml-2 text-rose-200 hover:text-rose-100 disabled:opacity-50"
+                title="Supprimer" (click)="remove(a)"
+                [disabled]="loading || deletingId === a.id || !a.id">🗑️</button>
+      </div>
+      <div *ngIf="!listB().length" class="px-3 py-6 text-sm opacity-70">Aucun rendez-vous sur le pont B.</div>
+    </div>
+  </section>
+</div>
