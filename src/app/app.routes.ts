@@ -1,9 +1,12 @@
 ﻿import { Routes } from '@angular/router';
+import { DashboardComponent } from './pages/dashboard/dashboard.component';
+import { ClientsComponent } from './pages/clients/clients.component';
+import { AppointmentsComponent } from './pages/appointments/appointments.component';
 
 export const routes: Routes = [
   { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
-  { path: 'dashboard', loadChildren: () => import('./features/dashboard/dashboard.routes').then(m => m.DASHBOARD_ROUTES) },
-  { path: 'clients', loadChildren: () => import('./features/clients/clients.routes').then(m => m.CLIENTS_ROUTES) },
-  { path: 'rendez-vous', loadChildren: () => import('./features/appointments/appointments.routes').then(m => m.APPOINTMENTS_ROUTES) },
+  { path: 'dashboard', component: DashboardComponent, title: 'Accueil' },
+  { path: 'clients', component: ClientsComponent, title: 'Clients' },
+  { path: 'prise-rendez-vous', component: AppointmentsComponent, title: 'Prise de prise-rendez-vous' },
   { path: '**', redirectTo: 'dashboard' }
 ];
