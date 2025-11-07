@@ -34,6 +34,11 @@ export class ClientsComponent implements OnInit, AfterViewInit {
   pageSize = 20;
   totalClient = 0;
 
+  // Ajout des propriétés pour la gestion de la popup
+  isEditPopupOpen = false;
+  editForm: FormGroup;
+  currentClientId: number | null = null; // Correction du type de currentClientId
+
   get totalPages(): number {
     return Math.ceil(this.totalClient / this.pageSize);
   }
@@ -46,6 +51,16 @@ export class ClientsComponent implements OnInit, AfterViewInit {
       vehicle: ['', Validators.required],
       plate: ['', Validators.required], // Champ obligatoire pour la plaque
       email: ['', [Validators.email]] // Validation uniquement si le champ n'est pas vide
+    });
+
+    // Initialisation du formulaire de modification
+    this.editForm = this.fb.group({
+      firstName: ['', Validators.required],
+      name: ['', Validators.required],
+      phone: ['', [Validators.required, bePhoneLibValidator()]],
+      vehicle: ['', Validators.required],
+      plate: ['', Validators.required],
+      email: ['', [Validators.email]]
     });
   }
 
@@ -77,12 +92,6 @@ export class ClientsComponent implements OnInit, AfterViewInit {
   }
 
   // Pagination navigation
-  goToPage(page: number): void {
-    if (page < 1 || page > this.totalPages) return;
-    this.page = page;
-    this.refreshList();
-  }
-
   nextPage(): void {
     if (this.page < this.totalPages) {
       this.page++;
@@ -153,7 +162,7 @@ export class ClientsComponent implements OnInit, AfterViewInit {
       name: String(name).trim(),
       phone: parsed.e164,
       vehicle: String(vehicle || '').trim() || undefined,
-      plate: String(this.form.value.plate).trim() // Ajout du champ 'plate'
+      plate: String(plate || '').trim() // Ajout du champ 'plate'
     };
 
     this.api.create(dto).subscribe({
@@ -187,6 +196,64 @@ export class ClientsComponent implements OnInit, AfterViewInit {
       error: (err) => {
         console.error(err);
         this.toastr.error('Suppression impossible.', 'Erreur réseau');
+      }
+    });
+  }
+
+  openEditPopup(client: Client) {
+    this.isEditPopupOpen = true;
+    this.currentClientId = client.id; // client.id est de type number
+    this.editForm.patchValue({
+      firstName: client.firstName,
+      name: client.name,
+      phone: client.phone,
+      vehicle: client.vehicle ?? '',
+      plate: client.plate ?? '',
+      email: client.email ?? ''
+    });
+  }
+
+  closeEditPopup() {
+    this.isEditPopupOpen = false;
+    this.currentClientId = null;
+  }
+
+  updateClient() {
+    if (this.editForm.invalid || this.currentClientId === null) {
+      this.editForm.markAllAsTouched();
+      return;
+    }
+
+    const { firstName, name, phone, vehicle, plate, email } = this.editForm.value as {
+      firstName: string; name: string; phone: string; vehicle?: string; plate: string; email?: string
+    };
+
+    const parsed = parsePhoneBE(phone);
+    if (!parsed.isValid) {
+      this.editForm.get('phone')?.setErrors({ bePhone: true });
+      this.toastr.error('Numéro belge invalide.', 'Erreur');
+      return;
+    }
+
+    const dto: Omit<Client, 'id'> = {
+      firstName: String(firstName).trim(),
+      name: String(name).trim(),
+      phone: parsed.e164,
+      vehicle: String(vehicle || '').trim() || undefined,
+      plate: String(plate || '').trim(),
+      email: String(email || '').trim() || undefined
+    };
+
+    this.api.update(this.currentClientId, dto).subscribe({
+      next: (updatedClient) => {
+        this.items = this.items.map((client) =>
+          client.id === updatedClient.id ? updatedClient : client
+        );
+        this.toastr.success('Client mis à jour avec succès');
+        this.closeEditPopup();
+      },
+      error: () => {
+        this.toastr.error('Une erreur est survenue lors de la mise à jour');
       }
     });
   }
