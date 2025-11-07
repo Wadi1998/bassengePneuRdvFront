@@ -19,12 +19,7 @@
 
   <!-- Formulaire + recherche -->
   <div class="card-dark p-6 md:p-7 mb-8">
-    <!--
-      Grid :
-      - mobile: 1 colonne
-      - md:     12 colonnes, le bouton prend toute la ligne (col-span-12)
-      - xl:     14 colonnes → 3/3/3/3/2 pour bouton (plus d’espace)
-    -->
+    <!-- Formulaire -->
     <form
       [formGroup]="form"
       (ngSubmit)="add()"
@@ -133,23 +128,21 @@
           <span>👤+</span><span>Ajouter</span>
         </button>
       </div>
-
-      <!-- Barre de recherche -->
-      <div class="md:col-span-12">
-        <div class="field">
-          <span class="field-icon">
-            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/>
-            </svg>
-          </span>
-          <input
-            [formControl]="search"
-            placeholder="Rechercher (nom, prénom, téléphone, véhicule)"
-            class="field-input-ghost"
-          />
-        </div>
-      </div>
     </form>
+  </div>
+
+  <!-- Barre de recherche déplacée en dessous du cadre avec un espacement supplémentaire -->
+  <div class="field mt-8 mb-8">
+    <span class="field-icon">
+      <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/>
+      </svg>
+    </span>
+    <input
+      [formControl]="search"
+      placeholder="Rechercher (nom, prénom, téléphone, véhicule)"
+      class="field-input-ghost"
+    />
   </div>
 
   <!-- Liste des clients -->
