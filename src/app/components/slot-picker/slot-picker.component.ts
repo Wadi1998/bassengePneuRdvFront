@@ -56,6 +56,15 @@ export class SlotPickerComponent implements OnChanges {
   private cdr = inject(ChangeDetectorRef);
   public i18n = inject(I18nService);
 
+  // --- helpers date locale (évite toISOString/UTC) ---
+  private pad(n: number): string {
+    return n < 10 ? `0${n}` : `${n}`;
+  }
+
+  private formatDate(d: Date): string {
+    return `${d.getFullYear()}-${this.pad(d.getMonth() + 1)}-${this.pad(d.getDate())}`;
+  }
+
   ngOnChanges(ch: SimpleChanges): void {
     if (ch['date'] || ch['duration'] || ch['bay'] || ch['items']) {
       this.buildSlots();
@@ -73,7 +82,8 @@ export class SlotPickerComponent implements OnChanges {
   private buildSlots(): void {
     if (!this.date || !this.duration || !this.bay) return;
 
-    const todayStr = new Date().toISOString().slice(0, 10);
+    // Utiliser la date locale pour éviter les décalages UTC
+    const todayStr = this.formatDate(new Date());
     const now = new Date();
     const nowMin = now.getHours() * 60 + now.getMinutes();
 

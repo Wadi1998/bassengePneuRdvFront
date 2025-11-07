@@ -18,12 +18,27 @@ import { SlotPickerComponent } from '../../components/slot-picker/slot-picker.co
   imports: [CommonModule, FormsModule, NgIf, NgFor, UpperCasePipe, SlotPickerComponent]
 })
 export class AppointmentsComponent implements OnInit {
-  date: string = new Date().toISOString().slice(0, 10);
+  // On initialise dans ngOnInit pour garantir qu'on utilise la date locale
+  date: string = '';
   duration = 30;
   durations = [15, 30, 45, 60];
   // force (dé)montage des slot-pickers via *ngIf
   showSlots = true;
 
+  // --- helpers date locale (évite toISOString/UTC) ---
+  private pad(n: number): string {
+    return n < 10 ? `0${n}` : `${n}`;
+  }
+
+  private formatDate(d: Date): string {
+    return `${d.getFullYear()}-${this.pad(d.getMonth() + 1)}-${this.pad(d.getDate())}`;
+  }
+
+  private parseDate(s: string): Date {
+    const [y, m, day] = (s || '').split('-').map(Number);
+    // new Date(year, monthIndex, day) crée une date en heure locale
+    return new Date(y, (m || 1) - 1, day || 1);
+  }
 
   items: Appointment[] = [];
 
@@ -48,6 +63,9 @@ export class AppointmentsComponent implements OnInit {
   private cdr = inject(ChangeDetectorRef);
 
   async ngOnInit(): Promise<void> {
+    // initialiser la date en heure locale pour éviter le décalage UTC
+    this.date = this.formatDate(new Date());
+
     await this.refresh();
     await this.refreshClients();
   }
@@ -99,9 +117,9 @@ export class AppointmentsComponent implements OnInit {
 
   // === Navigation jours ===
   async prevDay() {
-    const d = new Date(this.date);
+    const d = this.parseDate(this.date);
     d.setDate(d.getDate() - 1);
-    this.date = d.toISOString().slice(0, 10);
+    this.date = this.formatDate(d);
 
     this.items = [];            // vide → feedback immédiat
     this.cdr.detectChanges();
@@ -116,9 +134,9 @@ export class AppointmentsComponent implements OnInit {
   }
 
   async nextDay() {
-    const d = new Date(this.date);
+    const d = this.parseDate(this.date);
     d.setDate(d.getDate() + 1);
-    this.date = d.toISOString().slice(0, 10);
+    this.date = this.formatDate(d);
 
     this.items = [];
     this.cdr.detectChanges();

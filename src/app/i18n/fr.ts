@@ -27,8 +27,8 @@ const FR = {
   dashboard: {
     title: 'Prise-rendez-vous',
     defaultDurationNote: 'durée par défaut 30 min',
-    slotsA: 'Créneaux (A)',
-    slotsB: 'Créneaux (B)'
+    slotsA: 'Pont (A)',
+    slotsB: 'Pont (B)'
   },
   toolbar: {
     start: 'Début',
