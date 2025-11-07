@@ -4,6 +4,8 @@ import { FormsModule } from '@angular/forms';
 
 import { AppointmentsService } from '../../services/appointments.service';
 import { Appointment } from '../../models/appointment.model';
+import { I18nService } from '../../services/i18n.service';
+
 type Bay = 'A' | 'B';
 
 interface Interval {
@@ -39,7 +41,7 @@ export class DashboardComponent implements OnInit {
   // intervalles occupés par baie
   private intervalsByBay: Record<Bay, Interval[]> = { A: [], B: [] };
 
-  constructor(private readonly appointmentsSvc: AppointmentsService) {}
+  constructor(private readonly appointmentsSvc: AppointmentsService, public i18n: I18nService) {}
 
   ngOnInit(): void {
     this.regenTimes();

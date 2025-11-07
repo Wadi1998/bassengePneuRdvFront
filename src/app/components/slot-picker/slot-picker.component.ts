@@ -10,6 +10,7 @@
 } from '@angular/core';
 import { CommonModule, NgFor, NgIf, NgSwitch, NgSwitchCase } from '@angular/common';
 import { Appointment } from '../../models/appointment.model';
+import { I18nService } from '../../services/i18n.service';
 
 type SlotState = 'free' | 'busy' | 'past' | 'indispo';
 
@@ -52,7 +53,7 @@ export class SlotPickerComponent implements OnChanges {
   private readonly START_HOUR = 8;
   private readonly END_HOUR = 18;
 
-  constructor(private cdr: ChangeDetectorRef) {}
+  constructor(private cdr: ChangeDetectorRef, public i18n: I18nService) {}
 
   ngOnChanges(ch: SimpleChanges): void {
     if (ch['date'] || ch['duration'] || ch['bay'] || ch['items']) {
@@ -105,7 +106,7 @@ export class SlotPickerComponent implements OnChanges {
           out.push({
             time,
             state: 'indispo',
-            note: `Pas assez d'espace pour ${this.duration} min`
+            note: this.i18n.t('slot.notEnoughSpace', { duration: String(this.duration) })
           });
         } else {
           out.push({ time, state: 'free' });

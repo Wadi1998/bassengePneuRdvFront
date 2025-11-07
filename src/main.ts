@@ -8,6 +8,18 @@ import { provideToastr } from 'ngx-toastr';
 import { AppComponent } from './app/app.component';
 import { routes } from './app/app.routes';
 
+// ngx-translate providers
+import { TranslateLoader, TranslateModule } from '@ngx-translate/core';
+import { HttpClient } from '@angular/common/http';
+import { importProvidersFrom } from '@angular/core';
+
+// Factory for a minimal TranslateLoader (reads /assets/i18n/{lang}.json)
+export function translateLoaderFactory(http: HttpClient): TranslateLoader {
+  return {
+    getTranslation: (lang: string) => http.get(`/assets/i18n/${lang}.json`)
+  } as TranslateLoader;
+}
+
 bootstrapApplication(AppComponent, {
   providers: [
     provideRouter(routes),
@@ -20,5 +32,17 @@ bootstrapApplication(AppComponent, {
       progressBar: true,
       preventDuplicates: true,
     }),                                // ✅ fournit ToastConfig + ToastrService
+
+    // Import ngx-translate providers via providers-from-module so TranslateService + loader are available
+    importProvidersFrom(
+      TranslateModule.forRoot({
+        loader: {
+          provide: TranslateLoader,
+          useFactory: translateLoaderFactory,
+          deps: [HttpClient]
+        }
+      })
+    )
+
   ],
 }).catch(err => console.error(err));

@@ -64,4 +64,15 @@
   .field-input-ghost { @apply input-ghost pl-10 h-11; }   /* variante pour la search bar */
   /* Variante compacte pour inputs sans icône (moins de padding à gauche) */
   .field-input-compact { @apply input-brand pl-4 h-11; }
+
+  /* Ajustements d'icônes et comportement responsive (ajoutés) */
+  button svg[aria-hidden="true"] { margin-right: .5rem; vertical-align: middle; }
+  button svg { width: 16px; height: 16px; }
+
+  @media (max-width: 640px) {
+    /* réduire légèrement l'offset à gauche sur petits écrans */
+    .field-icon { left: 0.6rem; }
+    .field-input { padding-left: 2.2rem; }
+    .field-input-ghost { padding-left: 2.2rem; }
+  }
 }

@@ -8,6 +8,7 @@ import { ToastrService } from 'ngx-toastr';
 import { bePhoneLibValidator, parsePhoneBE } from '../../utils/phone-be-lib';
 import { ClientsService } from '../../services/clients.service';
 import { Client } from '../../models/client.model';
+import { I18nService } from '../../services/i18n.service';
 
 @Component({
   selector: 'app-clients',
@@ -19,6 +20,7 @@ export class ClientsComponent implements OnInit, AfterViewInit {
   private fb = inject(FormBuilder);
   private toastr = inject(ToastrService);
   private api = inject(ClientsService);
+  public i18n = inject(I18nService);
 
   form: FormGroup;
   items: Client[] = [];
@@ -142,7 +144,7 @@ export class ClientsComponent implements OnInit, AfterViewInit {
   add(): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
-      this.toastr.error('Veuillez corriger le formulaire.', 'Formulaire invalide');
+      this.toastr.error(this.i18n.t('clients.firstNameRequired'), this.i18n.t('clients.addButton'));
       return;
     }
 
@@ -153,7 +155,7 @@ export class ClientsComponent implements OnInit, AfterViewInit {
 
     if (!parsed.isValid) {
       this.form.get('phone')?.setErrors({ bePhone: true });
-      this.toastr.error('Numéro belge invalide.', 'Erreur');
+      this.toastr.error(this.i18n.t('clients.phoneInvalid'), this.i18n.t('clients.addButton'));
       return;
     }
 
@@ -169,7 +171,7 @@ export class ClientsComponent implements OnInit, AfterViewInit {
       next: (created) => {
         // on insère en tête pour feedback instantané
         this.items = [created, ...this.items];
-        this.toastr.success('Client ajouté avec succès ✅', `${created.firstName} ${created.name}`);
+        this.toastr.success(this.i18n.t('clients.clientCount', { count: 1 }), `${created.firstName} ${created.name}`);
 
         this.form.reset();
         this.form.markAsPristine();
@@ -178,24 +180,24 @@ export class ClientsComponent implements OnInit, AfterViewInit {
       },
       error: (err) => {
         console.error(err);
-        this.toastr.error('Création impossible. Réessayez.', 'Erreur réseau');
+        this.toastr.error(this.i18n.t('errors.loadAppointments'), this.i18n.t('clients.addButton'));
       }
     });
   }
 
   remove(id: Client['id']): void {
     const c = this.items.find(x => x.id === id);
-    const label = c ? `${c.firstName} ${c.name}` : 'ce client';
-    if (!confirm(`Supprimer ${label} ?`)) return;
+    const label = c ? `${c.firstName} ${c.name}` : this.i18n.t('clients.removeButton');
+    if (!confirm(this.i18n.t('clients.removeButton') + ' ' + label + ' ?')) return;
 
     this.api.remove(id).subscribe({
       next: () => {
         this.items = this.items.filter(x => x.id !== id);
-        this.toastr.info('Client supprimé 🗑️');
+        this.toastr.info(this.i18n.t('clients.removeButton'));
       },
       error: (err) => {
         console.error(err);
-        this.toastr.error('Suppression impossible.', 'Erreur réseau');
+        this.toastr.error(this.i18n.t('errors.loadAppointments'));
       }
     });
   }
@@ -231,7 +233,7 @@ export class ClientsComponent implements OnInit, AfterViewInit {
     const parsed = parsePhoneBE(phone);
     if (!parsed.isValid) {
       this.editForm.get('phone')?.setErrors({ bePhone: true });
-      this.toastr.error('Numéro belge invalide.', 'Erreur');
+      this.toastr.error(this.i18n.t('clients.phoneInvalid'), this.i18n.t('clients.save'));
       return;
     }
 
@@ -249,11 +251,11 @@ export class ClientsComponent implements OnInit, AfterViewInit {
         this.items = this.items.map((client) =>
           client.id === updatedClient.id ? updatedClient : client
         );
-        this.toastr.success('Client mis à jour avec succès');
+        this.toastr.success(this.i18n.t('clients.save'));
         this.closeEditPopup();
       },
       error: () => {
-        this.toastr.error('Une erreur est survenue lors de la mise à jour');
+        this.toastr.error(this.i18n.t('errors.loadAppointments'));
       }
     });
   }

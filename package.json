@@ -28,6 +28,8 @@
     "@angular/platform-browser": "^20.3.0",
     "@angular/platform-server": "^20.3.0",
     "@angular/router": "^20.3.0",
+    "@ngx-translate/core": "^17.0.0",
+    "@ngx-translate/http-loader": "^17.0.0",
     "google-libphonenumber": "^3.2.43",
     "ngx-intl-tel-input": "^17.0.0",
     "ngx-toastr": "^19.1.0",

@@ -16,8 +16,8 @@
       'opacity-60 cursor-not-allowed': s.state !== 'free'
     }"
     [title]="(s.state === 'free' && !canBook)
-              ? (needService && needClient ? 'Choisir client et service'
-                 : (needService ? 'Choisir un type de service' : 'Choisir un client'))
+              ? (needService && needClient ? i18n.t('slot.chooseClientAndService')
+                 : (needService ? i18n.t('slot.chooseService') : i18n.t('slot.chooseClient')))
               : (s.note || '')"
   >
     <!-- Heure -->
@@ -34,13 +34,13 @@
              'text-slate-400': s.state === 'past' || s.state === 'indispo'
            }">
         <ng-container [ngSwitch]="s.state">
-          <span *ngSwitchCase="'free'">Libre</span>
+          <span *ngSwitchCase="'free'">{{ i18n.t('common.free') }}</span>
           <span *ngSwitchCase="'busy'">
-            {{ s.clientName || 'Client inconnu' }}
-            <ng-container *ngIf="s.serviceType"> — {{ s.serviceType }}</ng-container>
+            {{ s.clientName || i18n.t('common.unknownClient') }}
+            <ng-container *ngIf="s.serviceType">{{ i18n.t('slot.sep') }} {{ s.serviceType }}</ng-container>
           </span>
-          <span *ngSwitchCase="'indispo'">Plage indisponible</span>
-          <span *ngSwitchCase="'past'">Passé</span>
+          <span *ngSwitchCase="'indispo'">{{ i18n.t('common.indispo') }}</span>
+          <span *ngSwitchCase="'past'">{{ i18n.t('common.past') }}</span>
         </ng-container>
       </div>
     </div>
@@ -57,13 +57,13 @@
       <ng-container [ngSwitch]="s.state">
         <span *ngSwitchCase="'free'">
           {{ canBook
-          ? ('Réserver — ' + (serviceType || 'Service'))
-          : (needService && needClient ? 'Choisir client & service'
-            : (needService ? 'Choisir service' : 'Choisir client')) }}
+          ? (i18n.t('slot.reservePrefix') + (serviceType || i18n.t('slot.chooseService')))
+          : (needService && needClient ? i18n.t('slot.chooseClientAndService')
+            : (needService ? i18n.t('slot.chooseService') : i18n.t('slot.chooseClient'))) }}
         </span>
-        <span *ngSwitchCase="'busy'">Occupé</span>
-        <span *ngSwitchCase="'indispo'">Indispo</span>
-        <span *ngSwitchCase="'past'">Passé</span>
+        <span *ngSwitchCase="'busy'">{{ i18n.t('common.busy') }}</span>
+        <span *ngSwitchCase="'indispo'">{{ i18n.t('common.indispo') }}</span>
+        <span *ngSwitchCase="'past'">{{ i18n.t('common.past') }}</span>
       </ng-container>
     </span>
   </button>

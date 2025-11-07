@@ -1,8 +1,9 @@
 ﻿import { Component, OnInit, ChangeDetectorRef, ViewChildren, QueryList } from '@angular/core';
 import { CommonModule, NgFor, NgIf, UpperCasePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { forkJoin, lastValueFrom } from 'rxjs';
+import { lastValueFrom } from 'rxjs';
 import { ToastrService } from 'ngx-toastr';
+import { I18nService } from '../../services/i18n.service';
 
 import { Appointment } from '../../models/appointment.model';
 import { Client } from '../../models/client.model';
@@ -44,6 +45,7 @@ export class AppointmentsComponent implements OnInit {
     private appts: AppointmentsService,
     private clientsApi: ClientsService,
     private toastr: ToastrService,
+    public i18n: I18nService,
     private cdr: ChangeDetectorRef
   ) {}
 
@@ -72,7 +74,7 @@ export class AppointmentsComponent implements OnInit {
 
     } catch (err) {
       console.error('Erreur lors du refresh', err);
-      this.toastr.error('Erreur lors du chargement des rendez-vous.', 'Erreur réseau');
+      this.toastr.error(this.i18n.t('errors.loadAppointments'), 'Erreur réseau');
       this.items = [];
       this.cdr.markForCheck();
       this.rebuildChildren();
@@ -91,7 +93,7 @@ export class AppointmentsComponent implements OnInit {
       data.items.forEach(client => this.clientsById.set(client.id, client));
     } catch (err) {
       console.error('Erreur lors du chargement des clients', err);
-      this.toastr.error('Erreur lors du chargement des clients.', 'Erreur réseau');
+      this.toastr.error(this.i18n.t('errors.loadAppointments'), 'Erreur réseau');
       this.clients = [];
       this.clientsById.clear();
     }
@@ -194,12 +196,12 @@ export class AppointmentsComponent implements OnInit {
 
   private async createFor(bay: 'A' | 'B', time: string) {
     if (!this.selectedClient) {
-      this.toastr.warning('Choisis un client avant de réserver.');
+      this.toastr.warning(this.i18n.t('appointments.toasts.chooseClientBefore'));
       return;
     }
     if (!this.serviceValid) {
       this.showServiceError = true;
-      this.toastr.warning('Saisis un type de service avant de réserver.');
+      this.toastr.warning(this.i18n.t('appointments.toasts.serviceRequired'));
       return;
     }
 
@@ -216,19 +218,19 @@ export class AppointmentsComponent implements OnInit {
     try {
       await lastValueFrom(this.appts.create(a));
       await this.refresh();
-      this.toastr.success(`Réservé à ${time} sur pont ${bay}`, 'Rendez-vous créé');
+      this.toastr.success(this.i18n.t('appointments.toasts.booked', { time, bay }), this.i18n.t('appointments.toasts.bookedTitle'));
     } catch {
-      this.toastr.error('Impossible de créer le rendez-vous.', 'Erreur réseau');
+      this.toastr.error(this.i18n.t('appointments.toasts.bookError'), 'Erreur réseau');
     }
   }
 
   onBlocked(reason: 'service' | 'client' | 'both') {
     if (reason === 'both') {
-      this.toastr.warning('Choisis un client et un type de service avant de réserver.');
+      this.toastr.warning(this.i18n.t('appointments.toasts.bothRequired'));
     } else if (reason === 'client') {
-      this.toastr.warning('Choisis un client avant de réserver.');
+      this.toastr.warning(this.i18n.t('appointments.toasts.chooseClientBefore'));
     } else {
-      this.toastr.warning('Saisis un type de service avant de réserver.');
+      this.toastr.warning(this.i18n.t('appointments.toasts.serviceRequired'));
     }
   }
 

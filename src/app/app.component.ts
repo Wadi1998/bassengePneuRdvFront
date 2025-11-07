@@ -1,6 +1,7 @@
 ﻿import { Component } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import {CommonModule} from '@angular/common';
+import { I18nService } from './services/i18n.service';
 
 @Component({
   standalone: true,
@@ -11,4 +12,6 @@ import {CommonModule} from '@angular/common';
 export class AppComponent {
   open = false;          // pour le menu mobile
   today = new Date();    // <-- ajoute ceci
+
+  constructor(public i18n: I18nService) {}
 }
