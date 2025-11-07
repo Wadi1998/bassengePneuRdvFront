@@ -35,6 +35,23 @@
 
       <!-- Début / Fin journée -->
       <div class="lg:col-span-7 grid grid-cols-2 md:grid-cols-4 gap-2">
+        <!-- Export PDF -->
+        <div class="col-span-2 flex items-center gap-2">
+          <label class="flex items-center gap-2 h-11 px-3 rounded-xl bg-white/5 border border-white/10">
+            <span class="text-xs opacity-70">Du</span>
+            <input type="date" class="bg-transparent outline-none" [(ngModel)]="exportFrom" />
+          </label>
+          <label class="flex items-center gap-2 h-11 px-3 rounded-xl bg-white/5 border border-white/10">
+            <span class="text-xs opacity-70">Au</span>
+            <input type="date" class="bg-transparent outline-none" [(ngModel)]="exportTo" />
+          </label>
+          <button (click)="exportAppointments()" class="h-11 px-4 rounded-xl bg-emerald-500 text-white font-semibold">
+            <span *ngIf="!exportLoading">Exporter</span>
+            <span *ngIf="exportLoading">Export en cours…</span>
+          </button>
+        </div>
+        <div class="col-span-2 text-xs text-red-400" *ngIf="exportError">{{ exportError }}</div>
+
         <label class="flex items-center gap-2 h-11 px-3 rounded-xl bg-white/5 border border-white/10">
           <span class="text-xs opacity-70">{{ i18n.t('toolbar.start') }}</span>
           <input type="time"
