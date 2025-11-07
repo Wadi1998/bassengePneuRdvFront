@@ -43,7 +43,9 @@ export class ClientsComponent implements OnInit, AfterViewInit {
       firstName: ['', Validators.required],
       name: ['', Validators.required],
       phone: ['', [Validators.required, bePhoneLibValidator()]],
-      vehicle: ['']
+      vehicle: ['', Validators.required],
+      plate: ['', Validators.required], // Champ obligatoire pour la plaque
+      email: ['', [Validators.email]] // Validation uniquement si le champ n'est pas vide
     });
   }
 
@@ -135,8 +137,8 @@ export class ClientsComponent implements OnInit, AfterViewInit {
       return;
     }
 
-    const { firstName, name, phone, vehicle } = this.form.value as {
-      firstName: string; name: string; phone: string; vehicle?: string;
+    const { firstName, name, phone, vehicle, plate } = this.form.value as {
+      firstName: string; name: string; phone: string; vehicle?: string; plate: string;
     };
     const parsed = parsePhoneBE(phone);
 
@@ -150,7 +152,8 @@ export class ClientsComponent implements OnInit, AfterViewInit {
       firstName: String(firstName).trim(),
       name: String(name).trim(),
       phone: parsed.e164,
-      vehicle: String(vehicle || '').trim() || undefined
+      vehicle: String(vehicle || '').trim() || undefined,
+      plate: String(this.form.value.plate).trim() // Ajout du champ 'plate'
     };
 
     this.api.create(dto).subscribe({

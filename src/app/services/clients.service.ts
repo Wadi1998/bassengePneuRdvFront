@@ -18,6 +18,10 @@ export class ClientsService {
     return this.http.post<Client>(this.base, dto);
   }
 
+  update(id: Client['id'], dto: Partial<Client>): Observable<Client> {
+    return this.http.patch<Client>(`${this.base}/${id}`, dto);
+  }
+
   remove(id: Client['id']): Observable<void> {
     return this.http.delete<void>(`${this.base}/${id}`);
   }
