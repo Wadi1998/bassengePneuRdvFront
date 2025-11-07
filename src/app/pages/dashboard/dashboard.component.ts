@@ -125,7 +125,7 @@ export class DashboardComponent implements OnInit {
     const s = this.minToHHmm(itv.startMin);
     const e = this.minToHHmm(itv.endMin);
     const who = itv.appt.clientName ? `${itv.appt.clientName} • ` : '';
-    return `${who}${s} → ${e}`;
+    return `${who}${s} → ${e} - ` + itv.appt.serviceType;
   }
 
   // --- génération de la grille des heures ---
