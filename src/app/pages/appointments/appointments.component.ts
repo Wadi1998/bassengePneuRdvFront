@@ -1,7 +1,7 @@
-﻿import { Component, OnInit, ChangeDetectorRef, ViewChildren, QueryList, NgZone } from '@angular/core';
+﻿import { Component, OnInit, ChangeDetectorRef, ViewChildren, QueryList } from '@angular/core';
 import { CommonModule, NgFor, NgIf, UpperCasePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { forkJoin, lastValueFrom, map } from 'rxjs';
+import { forkJoin, lastValueFrom } from 'rxjs';
 import { ToastrService } from 'ngx-toastr';
 
 import { Appointment } from '../../models/appointment.model';
@@ -44,30 +44,12 @@ export class AppointmentsComponent implements OnInit {
     private appts: AppointmentsService,
     private clientsApi: ClientsService,
     private toastr: ToastrService,
-    private cdr: ChangeDetectorRef,
-    private zone: NgZone
+    private cdr: ChangeDetectorRef
   ) {}
 
   async ngOnInit(): Promise<void> {
     await this.refresh();
-  }
-
-  private cacheClients(list: Client[] = []): void {
-    this.clients = list || [];
-    this.clientsById.clear();
-    for (const c of this.clients) {
-      const nid = Number((c as any).id);
-      this.clientsById.set(nid, c);
-    }
-  }
-
-  private nameOf(clientId: number | string | undefined): string | undefined {
-    if (clientId == null) return undefined;
-    const id = Number(clientId);
-    const c = this.clientsById.get(id);
-    if (!c) return undefined;
-    const full = `${c.firstName ?? ''} ${c.name ?? ''}`.trim();
-    return full || undefined;
+    await this.refreshClients();
   }
 
   /** 🔧 Rebuild impératif des 2 SlotPicker */
@@ -96,6 +78,22 @@ export class AppointmentsComponent implements OnInit {
       this.rebuildChildren();
 
     } finally {
+    }
+  }
+
+  async refreshClients(): Promise<void> {
+    try {
+      const data = await lastValueFrom(
+        this.clientsApi.listFiltered(this.clientSearch, 1, 10)
+      );
+      this.clients = data.items;
+      this.clientsById.clear();
+      data.items.forEach(client => this.clientsById.set(client.id, client));
+    } catch (err) {
+      console.error('Erreur lors du chargement des clients', err);
+      this.toastr.error('Erreur lors du chargement des clients.', 'Erreur réseau');
+      this.clients = [];
+      this.clientsById.clear();
     }
   }
 
@@ -232,5 +230,9 @@ export class AppointmentsComponent implements OnInit {
     } else {
       this.toastr.warning('Saisis un type de service avant de réserver.');
     }
+  }
+
+  onClientSearchChange(): void {
+    this.refreshClients();
   }
 }

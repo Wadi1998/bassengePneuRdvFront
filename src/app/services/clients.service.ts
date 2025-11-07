@@ -31,4 +31,15 @@ export class ClientsService {
     const params = { page: page.toString(), pageSize: pageSize.toString() };
     return this.http.get<{ items: Client[]; total: number }>(this.base, { params });
   }
+
+  /**
+   * Récupère les clients filtrés et paginés
+   * @param query Termes de recherche pour filtrer les clients
+   * @param page Numéro de la page (commence à 1)
+   * @param pageSize Nombre d'éléments par page
+   */
+  listFiltered(query: string, page: number, pageSize: number): Observable<{ items: Client[]; total: number }> {
+    const params = { query, page: page.toString(), pageSize: pageSize.toString() };
+    return this.http.get<{ items: Client[]; total: number }>(`${this.base}/search`, { params });
+  }
 }
