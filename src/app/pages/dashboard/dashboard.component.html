@@ -1,175 +1,139 @@
-﻿<!-- Barre haute (date + nav + toggle) -->
-<div class="rounded-2xl border border-white/10 bg-white/5 p-4 mb-6">
-  <div class="grid lg:grid-cols-2 gap-4">
-    <!-- Calendrier -->
-    <div class="flex items-center gap-3">
-      <div class="flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-2 w-full">
-        <span class="opacity-75">📅</span>
-        <input
-          type="date"
-          class="bg-transparent outline-none w-full"
-          [ngModel]="date"
-          (ngModelChange)="setDate($event)"
-          [disabled]="loading"
-        />
-      </div>
-    </div>
+﻿<section class="max-w-7xl mx-auto px-4 py-8 text-slate-100">
 
-    <!-- Actions -->
-    <div class="flex items-center gap-2 justify-end">
-      <div class="rounded-xl border border-white/10 bg-white/5 p-1">
-        <button class="px-3 py-1 rounded-lg text-sm"
-                [class.bg-white/20]="viewMode==='grid'"
-        (click)="viewMode='grid'">Grille 15′</button>
-        <button class="px-3 py-1 rounded-lg text-sm"
-                [class.bg-white/20]="viewMode==='list'"
-        (click)="viewMode='list'">Liste (début → fin)</button>
+  <!-- Titre + date -->
+  <div class="flex items-center justify-between mb-6">
+    <h2 class="text-3xl font-extrabold tracking-tight">Prise-rendez-vous</h2>
+    <span class="inline-flex items-center gap-2 text-xs px-3 py-1 rounded-full bg-white/5 border border-white/10">
+      <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M3 12a9 9 0 1 0 18 0 9 9 0 0 0-18 0Z"></path>
+        <path d="M12 7v5l3 3"></path>
+      </svg>
+      {{ date }}
+    </span>
+  </div>
+
+  <!-- Toolbar : - date + + plage horaire -->
+  <div class="rounded-2xl bg-white/[0.04] border border-white/10 p-4 md:p-5 mb-6">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-3">
+      <!-- +/- + date -->
+      <div class="lg:col-span-5 flex items-center gap-2">
+
+
+        <div class="flex-1 h-11 px-4 rounded-xl border border-white/10 bg-white/5 flex items-center justify-center">
+          <span class="font-medium tracking-wide">{{ date }}</span>
+        </div>
+
+
+
+        <div class="relative w-48">
+          <span class="absolute left-3 top-1/2 -translate-y-1/2 opacity-70">
+            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="4" width="18" height="18" rx="2"></rect>
+              <path d="M16 2v4M8 2v4M3 10h18"></path>
+            </svg>
+          </span>
+          <input type="date"
+                 class="h-11 w-full pl-9 pr-3 rounded-xl bg-white/5 border border-white/10 focus:outline-none focus:ring-2 focus:ring-white/20"
+                 [ngModel]="date"
+                 (ngModelChange)="setDate($event)" />
+        </div>
       </div>
 
-      <button class="rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 px-3 py-2"
-              (click)="prevDay()" [disabled]="loading">‹ Jour -1</button>
-      <button class="rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 px-3 py-2"
-              (click)="today()" [disabled]="loading">Aujourd’hui</button>
-      <button class="rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 px-3 py-2"
-              (click)="nextDay()" [disabled]="loading">Jour +1 ›</button>
+      <!-- Début / Fin journée -->
+      <div class="lg:col-span-7 grid grid-cols-2 md:grid-cols-4 gap-2">
+        <label class="flex items-center gap-2 h-11 px-3 rounded-xl bg-white/5 border border-white/10">
+          <span class="text-xs opacity-70">Début</span>
+          <input type="time"
+                 class="bg-transparent outline-none flex-1"
+                 [(ngModel)]="startTime"
+                 (change)="onChangeBounds()" />
+        </label>
+        <label class="flex items-center gap-2 h-11 px-3 rounded-xl bg-white/5 border border-white/10">
+          <span class="text-xs opacity-70">Fin</span>
+          <input type="time"
+                 class="bg-transparent outline-none flex-1"
+                 [(ngModel)]="endTime"
+                 (change)="onChangeBounds()" />
+        </label>
+        <label class="flex items-center gap-2 h-11 px-3 rounded-xl bg-white/5 border border-white/10">
+          <span class="text-xs opacity-70">Pas</span>
+          <input type="number" min="5" step="5"
+                 class="bg-transparent outline-none w-16 text-right"
+                 [(ngModel)]="stepMin"
+                 (change)="onChangeBounds()" /> <span class="text-xs opacity-70">min</span>
+        </label>
+        <div class="flex items-center justify-end text-xs text-slate-300 h-11">
+          durée par défaut 30 min
+        </div>
+      </div>
     </div>
   </div>
-</div>
 
-<!-- === VUE GRILLE === -->
-<div *ngIf="viewMode==='grid'" class="grid md:grid-cols-2 gap-6">
-  <!-- Col A -->
-  <section class="rounded-2xl border border-white/10 bg-white/5 p-3">
-    <div class="flex items-center justify-between px-2 py-2">
-      <h2 class="font-semibold text-lg">Créneaux (A)</h2>
-      <span class="text-xs opacity-70">{{ slots('A').length }} créneaux</span>
-    </div>
+  <!-- Deux colonnes A / B -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-    <div class="h-[560px] overflow-auto pr-1 space-y-2">
-      <div *ngFor="let s of slots('A')"
-           class="rounded-xl border px-3 py-3 flex items-center justify-between transition"
-           [ngClass]="
-             s.state === 'busy'
-               ? 'border-emerald-500/30 bg-emerald-900/30 text-emerald-200'
-               : (s.state === 'free'
-                   ? 'border-rose-500/30 bg-rose-900/30 text-rose-200'
-                   : 'border-white/10 bg-white/5 text-slate-400')
-           ">
-        <div class="flex items-center gap-3">
-          <span class="w-16 font-mono text-sm">{{ s.time }}</span>
-          <div class="min-w-0">
-            <div *ngIf="s.appt; else libreA" class="truncate font-medium">
-              {{ s.appt.clientName || 'Client inconnu' }}
-              <span class="opacity-70" *ngIf="s.appt.serviceType">— {{ s.appt.serviceType }}</span>
-            </div>
-            <ng-template #libreA>
-              <div class="text-xs italic">Libre</div>
-            </ng-template>
-            <div *ngIf="s.appt" class="text-xs opacity-70">{{ s.appt.duration }} min</div>
-          </div>
-        </div>
+    <!-- Baie A -->
+    <div class="rounded-2xl bg-white/[0.04] border border-white/10">
+      <div class="flex items-center justify-between px-5 py-4">
+        <h3 class="text-lg font-semibold">Créneaux (A)</h3>
+        <div class="text-xs text-slate-300">Pas de {{ stepMin }} min</div>
+      </div>
 
-        <div class="flex items-center gap-2">
-          <span *ngIf="s.state==='past'" class="text-xs">Passé</span>
-          <button *ngIf="s.appt" class="ml-2 text-rose-200 hover:text-rose-100 disabled:opacity-50"
-                  title="Supprimer" (click)="remove(s.appt)"
-                  [disabled]="loading || deletingId === s.appt.id || !s.appt.id">🗑️</button>
+      <div class="max-h-[70vh] overflow-y-auto px-5 pb-5 space-y-3">
+        <div *ngFor="let t of times"
+             class="flex items-center justify-between rounded-xl border border-white/10 bg-slate-900/60 px-4 py-3">
+          <div class="text-sm font-semibold tracking-wide">{{ t }}</div>
+
+          <ng-container [ngSwitch]="statusOf('A', t)">
+            <!-- Passé -->
+            <span *ngSwitchCase="'past'"
+                  class="text-xs px-3 py-1 rounded-full bg-white/5 border border-white/10">Passé</span>
+
+            <!-- Occupé => VERT -->
+            <span *ngSwitchCase="'busy'"
+                  class="text-xs px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-200">
+              {{ busyLabel('A', t) }}
+            </span>
+
+            <!-- Libre => ROUGE -->
+            <span *ngSwitchDefault
+                  class="text-xs px-3 py-1 rounded-full bg-red-500/10 border border-red-500/30 text-red-200">
+              Libre
+            </span>
+          </ng-container>
         </div>
       </div>
     </div>
-  </section>
 
-  <!-- Col B -->
-  <section class="rounded-2xl border border-white/10 bg-white/5 p-3">
-    <div class="flex items-center justify-between px-2 py-2">
-      <h2 class="font-semibold text-lg">Créneaux (B)</h2>
-      <span class="text-xs opacity-70">{{ slots('B').length }} créneaux</span>
-    </div>
+    <!-- Baie B -->
+    <div class="rounded-2xl bg-white/[0.04] border border-white/10">
+      <div class="flex items-center justify-between px-5 py-4">
+        <h3 class="text-lg font-semibold">Créneaux (B)</h3>
+        <div class="text-xs text-slate-300">Pas de {{ stepMin }} min</div>
+      </div>
 
-    <div class="h-[560px] overflow-auto pr-1 space-y-2">
-      <div *ngFor="let s of slots('B')"
-           class="rounded-xl border px-3 py-3 flex items-center justify-between transition"
-           [ngClass]="
-             s.state === 'busy'
-               ? 'border-emerald-500/30 bg-emerald-900/30 text-emerald-200'
-               : (s.state === 'free'
-                   ? 'border-rose-500/30 bg-rose-900/30 text-rose-200'
-                   : 'border-white/10 bg-white/5 text-slate-400')
-           ">
-        <div class="flex items-center gap-3">
-          <span class="w-16 font-mono text-sm">{{ s.time }}</span>
-          <div class="min-w-0">
-            <div *ngIf="s.appt; else libreB" class="truncate font-medium">
-              {{ s.appt.clientName || 'Client inconnu' }}
-              <span class="opacity-70" *ngIf="s.appt.serviceType">— {{ s.appt.serviceType }}</span>
-            </div>
-            <ng-template #libreB>
-              <div class="text-xs italic">Libre</div>
-            </ng-template>
-            <div *ngIf="s.appt" class="text-xs opacity-70">{{ s.appt.duration }} min</div>
-          </div>
-        </div>
+      <div class="max-h-[70vh] overflow-y-auto px-5 pb-5 space-y-3">
+        <div *ngFor="let t of times"
+             class="flex items-center justify-between rounded-xl border border-white/10 bg-slate-900/60 px-4 py-3">
+          <div class="text-sm font-semibold tracking-wide">{{ t }}</div>
 
-        <div class="flex items-center gap-2">
-          <span *ngIf="s.state==='past'" class="text-xs">Passé</span>
-          <button *ngIf="s.appt" class="ml-2 text-rose-200 hover:text-rose-100 disabled:opacity-50"
-                  title="Supprimer" (click)="remove(s.appt)"
-                  [disabled]="loading || deletingId === s.appt.id || !s.appt.id">🗑️</button>
+          <ng-container [ngSwitch]="statusOf('B', t)">
+            <span *ngSwitchCase="'past'"
+                  class="text-xs px-3 py-1 rounded-full bg-white/5 border border-white/10">Passé</span>
+
+            <span *ngSwitchCase="'busy'"
+                  class="text-xs px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-200">
+              {{ busyLabel('B', t) }}
+            </span>
+
+            <span *ngSwitchDefault
+                  class="text-xs px-3 py-1 rounded-full bg-red-500/10 border border-red-500/30 text-red-200">
+              Libre
+            </span>
+          </ng-container>
         </div>
       </div>
     </div>
-  </section>
-</div>
 
-<!-- === VUE LISTE (début → fin) === -->
-<div *ngIf="viewMode==='list'" class="grid md:grid-cols-2 gap-6">
-  <!-- A -->
-  <section class="rounded-2xl border border-white/10 bg-white/5 p-3">
-    <div class="flex items-center justify-between px-2 py-2">
-      <h2 class="font-semibold text-lg">Rendez-vous (A)</h2>
-      <span class="text-xs opacity-70">{{ listA().length }} RDV</span>
-    </div>
-
-    <div class="space-y-2">
-      <div *ngFor="let a of listA()"
-           class="rounded-xl border border-emerald-500/30 bg-emerald-900/30 text-emerald-200 px-3 py-3 flex items-center justify-between">
-        <div class="flex items-center gap-3 min-w-0">
-          <span class="w-28 font-mono text-sm">{{ a.time }} → {{ endTime(a.time, a.duration) }}</span>
-          <div class="min-w-0">
-            <div class="truncate font-medium">{{ a.clientName || 'Client inconnu' }}</div>
-            <div class="text-xs opacity-80 truncate">{{ a.serviceType || 'Service' }} — {{ a.duration }} min</div>
-          </div>
-        </div>
-        <button class="ml-2 text-rose-200 hover:text-rose-100 disabled:opacity-50"
-                title="Supprimer" (click)="remove(a)"
-                [disabled]="loading || deletingId === a.id || !a.id">🗑️</button>
-      </div>
-      <div *ngIf="!listA().length" class="px-3 py-6 text-sm opacity-70">Aucun rendez-vous sur le pont A.</div>
-    </div>
-  </section>
-
-  <!-- B -->
-  <section class="rounded-2xl border border-white/10 bg-white/5 p-3">
-    <div class="flex items-center justify-between px-2 py-2">
-      <h2 class="font-semibold text-lg">Rendez-vous (B)</h2>
-      <span class="text-xs opacity-70">{{ listB().length }} RDV</span>
-    </div>
-
-    <div class="space-y-2">
-      <div *ngFor="let a of listB()"
-           class="rounded-xl border border-emerald-500/30 bg-emerald-900/30 text-emerald-200 px-3 py-3 flex items-center justify-between">
-        <div class="flex items-center gap-3 min-w-0">
-          <span class="w-28 font-mono text-sm">{{ a.time }} → {{ endTime(a.time, a.duration) }}</span>
-          <div class="min-w-0">
-            <div class="truncate font-medium">{{ a.clientName || 'Client inconnu' }}</div>
-            <div class="text-xs opacity-80 truncate">{{ a.serviceType || 'Service' }} — {{ a.duration }} min</div>
-          </div>
-        </div>
-        <button class="ml-2 text-rose-200 hover:text-rose-100 disabled:opacity-50"
-                title="Supprimer" (click)="remove(a)"
-                [disabled]="loading || deletingId === a.id || !a.id">🗑️</button>
-      </div>
-      <div *ngIf="!listB().length" class="px-3 py-6 text-sm opacity-70">Aucun rendez-vous sur le pont B.</div>
-    </div>
-  </section>
-</div>
+  </div>
+</section>
