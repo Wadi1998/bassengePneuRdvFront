@@ -1,12 +1,12 @@
-﻿import {
-  ChangeDetectionStrategy,
+﻿import { ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
   EventEmitter,
   Input,
   OnChanges,
   Output,
-  SimpleChanges
+  SimpleChanges,
+  inject
 } from '@angular/core';
 import { CommonModule, NgFor, NgIf, NgSwitch, NgSwitchCase } from '@angular/common';
 import { Appointment } from '../../models/appointment.model';
@@ -53,7 +53,8 @@ export class SlotPickerComponent implements OnChanges {
   private readonly START_HOUR = 8;
   private readonly END_HOUR = 18;
 
-  constructor(private cdr: ChangeDetectorRef, public i18n: I18nService) {}
+  private cdr = inject(ChangeDetectorRef);
+  public i18n = inject(I18nService);
 
   ngOnChanges(ch: SimpleChanges): void {
     if (ch['date'] || ch['duration'] || ch['bay'] || ch['items']) {

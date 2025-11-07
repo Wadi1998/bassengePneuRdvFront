@@ -1,4 +1,4 @@
-﻿import { Component, OnInit, ChangeDetectorRef, ViewChildren, QueryList } from '@angular/core';
+﻿import { Component, OnInit, ChangeDetectorRef, ViewChildren, QueryList, inject } from '@angular/core';
 import { CommonModule, NgFor, NgIf, UpperCasePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { lastValueFrom } from 'rxjs';
@@ -41,13 +41,11 @@ export class AppointmentsComponent implements OnInit {
   // 🔎 Référence sur les 2 enfants pour forcer un rebuild manuel
   @ViewChildren(SlotPickerComponent) private pickers!: QueryList<SlotPickerComponent>;
 
-  constructor(
-    private appts: AppointmentsService,
-    private clientsApi: ClientsService,
-    private toastr: ToastrService,
-    public i18n: I18nService,
-    private cdr: ChangeDetectorRef
-  ) {}
+  private appts = inject(AppointmentsService);
+  private clientsApi = inject(ClientsService);
+  private toastr = inject(ToastrService);
+  public i18n = inject(I18nService);
+  private cdr = inject(ChangeDetectorRef);
 
   async ngOnInit(): Promise<void> {
     await this.refresh();
@@ -79,7 +77,6 @@ export class AppointmentsComponent implements OnInit {
       this.cdr.markForCheck();
       this.rebuildChildren();
 
-    } finally {
     }
   }
 

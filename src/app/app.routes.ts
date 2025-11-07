@@ -7,6 +7,6 @@ export const routes: Routes = [
   { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
   { path: 'dashboard', component: DashboardComponent, title: 'Accueil' },
   { path: 'clients', component: ClientsComponent, title: 'Clients' },
-  { path: 'prise-rendez-vous', component: AppointmentsComponent, title: 'Prise de prise-rendez-vous' },
+  { path: 'prise-rendez-vous', component: AppointmentsComponent, title: 'Prise de rendez-vous' },
   { path: '**', redirectTo: 'dashboard' }
 ];

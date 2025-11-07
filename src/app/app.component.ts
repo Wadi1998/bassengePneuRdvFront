@@ -1,4 +1,4 @@
-﻿import { Component } from '@angular/core';
+﻿import { Component, inject } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import {CommonModule} from '@angular/common';
 import { I18nService } from './services/i18n.service';
@@ -13,5 +13,6 @@ export class AppComponent {
   open = false;          // pour le menu mobile
   today = new Date();    // <-- ajoute ceci
 
-  constructor(public i18n: I18nService) {}
+  // Prefer `inject()` (standalone / functional style)
+  public i18n = inject(I18nService);
 }

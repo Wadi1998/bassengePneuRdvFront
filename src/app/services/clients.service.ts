@@ -1,4 +1,4 @@
-﻿import { Injectable } from '@angular/core';
+﻿import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Client } from '../models/client.model';
 import { environment } from '../../environments/environment';
@@ -7,8 +7,7 @@ import { Observable } from 'rxjs';
 @Injectable({ providedIn: 'root' })
 export class ClientsService {
   private base = `${environment.apiBase}/api/clients`;
-
-  constructor(private http: HttpClient) {}
+  private http = inject(HttpClient);
 
   list(): Observable<Client[]> {
     return this.http.get<Client[]>(this.base);

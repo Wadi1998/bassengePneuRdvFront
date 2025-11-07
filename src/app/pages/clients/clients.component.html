@@ -48,7 +48,7 @@
             <!-- id icon -->
             <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
               <rect x="3" y="4" width="18" height="16" rx="2" stroke="currentColor" stroke-width="1.5"/>
-              <path d="M8 11h8M8 15h5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              <path d="M8 11h8M8 15h5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
               <circle cx="12" cy="8" r="1" fill="currentColor"/>
             </svg>
           </span>
@@ -213,33 +213,33 @@
 
         <form [formGroup]="editForm" (ngSubmit)="updateClient()" class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label class="block text-sm font-medium text-slate-300 mb-1">{{ i18n.t('clients.firstnamePlaceholder') }}</label>
-            <input formControlName="firstName" class="field-input-compact" autofocus />
+            <label for="edit-firstName" class="block text-sm font-medium text-slate-300 mb-1">{{ i18n.t('clients.firstnamePlaceholder') }}</label>
+            <input id="edit-firstName" formControlName="firstName" class="field-input-compact" />
           </div>
 
           <div>
-            <label class="block text-sm font-medium text-slate-300 mb-1">{{ i18n.t('clients.namePlaceholder') }}</label>
-            <input formControlName="name" class="field-input-compact" />
+            <label for="edit-name" class="block text-sm font-medium text-slate-300 mb-1">{{ i18n.t('clients.namePlaceholder') }}</label>
+            <input id="edit-name" formControlName="name" class="field-input-compact" />
           </div>
 
           <div>
-            <label class="block text-sm font-medium text-slate-300 mb-1">{{ i18n.t('clients.phonePlaceholder') }}</label>
-            <input formControlName="phone" class="field-input-compact" />
+            <label for="edit-phone" class="block text-sm font-medium text-slate-300 mb-1">{{ i18n.t('clients.phonePlaceholder') }}</label>
+            <input id="edit-phone" formControlName="phone" class="field-input-compact" />
           </div>
 
           <div>
-            <label class="block text-sm font-medium text-slate-300 mb-1">{{ i18n.t('clients.vehiclePlaceholder') }}</label>
-            <input formControlName="vehicle" class="field-input-compact" />
+            <label for="edit-vehicle" class="block text-sm font-medium text-slate-300 mb-1">{{ i18n.t('clients.vehiclePlaceholder') }}</label>
+            <input id="edit-vehicle" formControlName="vehicle" class="field-input-compact" />
           </div>
 
           <div>
-            <label class="block text-sm font-medium text-slate-300 mb-1">{{ i18n.t('clients.platePlaceholder') }}</label>
-            <input formControlName="plate" class="field-input-compact" />
+            <label for="edit-plate" class="block text-sm font-medium text-slate-300 mb-1">{{ i18n.t('clients.platePlaceholder') }}</label>
+            <input id="edit-plate" formControlName="plate" class="field-input-compact" />
           </div>
 
           <div>
-            <label class="block text-sm font-medium text-slate-300 mb-1">{{ i18n.t('clients.emailPlaceholder') }}</label>
-            <input formControlName="email" type="email" class="field-input-compact" />
+            <label for="edit-email" class="block text-sm font-medium text-slate-300 mb-1">{{ i18n.t('clients.emailPlaceholder') }}</label>
+            <input id="edit-email" formControlName="email" type="email" class="field-input-compact" />
           </div>
 
           <div class="col-span-full flex justify-end gap-2 mt-2">

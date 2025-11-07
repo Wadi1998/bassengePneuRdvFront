@@ -1,17 +1,21 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import FR from '../i18n/fr';
 import { TranslateService } from '@ngx-translate/core';
 
 @Injectable({ providedIn: 'root' })
 export class I18nService {
   // keep a fallback resource for synchronous lookups if needed
-  private fallback: Record<string, any> = { fr: FR };
+  // fallback typed as unknown to avoid `any` usage
+  private fallback: Record<string, unknown> = { fr: FR };
 
-  constructor(private translate: TranslateService) {
-    // Ensure default language is set
+  // Prefer inject() for TranslateService and run init inline
+  private translate = inject(TranslateService);
+  // initialize default language
+  private _init = (() => {
     this.translate.setDefaultLang('fr');
     if (!this.translate.currentLang) this.translate.use('fr');
-  }
+    return true;
+  })();
 
   // get current language
   get currentLang(): string { return this.translate.currentLang || 'fr'; }
@@ -38,10 +42,11 @@ export class I18nService {
       let out = String(instant);
       if (safeParams) {
         for (const k of Object.keys(safeParams)) {
-          const v = String((safeParams as any)[k]);
+          const paramVal = safeParams[k];
+          const v = String(paramVal);
           // replace both {key} and {{key}} forms (with optional spaces)
-          out = out.replace(new RegExp(`\\{\\{\s*${k}\s*\\}\\}`, 'g'), v);
-          out = out.replace(new RegExp(`\\{${k}\\}`, 'g'), v);
+          out = out.replace(new RegExp(`{{\\s*${k}\\s*}}`, 'g'), v);
+          out = out.replace(new RegExp(`{${k}}`, 'g'), v);
         }
       }
       return out;
@@ -49,15 +54,19 @@ export class I18nService {
 
     // Fallback to local FR resources for sync lookup
     const parts = key.split('.');
-    let cur: any = this.fallback[this.currentLang] || {};
+    let cur: unknown = this.fallback[this.currentLang] || {};
     for (const p of parts) {
-      cur = cur?.[p];
-      if (cur === undefined) return key;
+      // drill into the fallback object safely
+      if (cur && typeof cur === 'object' && (cur as Record<string, unknown>)[p] !== undefined) {
+        cur = (cur as Record<string, unknown>)[p];
+      } else {
+        return key;
+      }
     }
     let out = String(cur);
     if (safeParams) {
       for (const k of Object.keys(safeParams)) {
-        out = out.replace(new RegExp(`\\{${k}\\}`, 'g'), String((safeParams as any)[k]));
+        out = out.replace(new RegExp(`{${k}}`, 'g'), String(safeParams[k]));
       }
     }
     return out;

@@ -1,13 +1,14 @@
 import { PhoneNumberUtil, PhoneNumberFormat } from 'google-libphonenumber';
+import { AbstractControl } from '@angular/forms';
 
 const phoneUtil = PhoneNumberUtil.getInstance();
 
-export type BeParse = {
+export interface BeParse {
   isValid: boolean;
   e164: string;
   national: string;
   error?: string;
-};
+}
 
 /**
  * Valide/normalise un numéro belge.
@@ -36,7 +37,7 @@ export function parsePhoneBE(raw: string): BeParse {
 
 /** Validator Angular (Reactive Forms) pour un téléphone BE */
 export function bePhoneLibValidator() {
-  return (control: any) => {
+  return (control: AbstractControl) => {
     const v = String(control?.value ?? '');
     const res = parsePhoneBE(v);
     return res.isValid ? null : { bePhone: true };

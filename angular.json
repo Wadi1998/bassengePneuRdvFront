@@ -32,8 +32,16 @@
                 }
               ],
               "budgets": [
-                { "type": "initial", "maximumWarning": "500kB", "maximumError": "1MB" },
-                { "type": "anyComponentStyle", "maximumWarning": "4kB", "maximumError": "8kB" }
+                {
+                  "type": "initial",
+                  "maximumWarning": "500kB",
+                  "maximumError": "1MB"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "4kB",
+                  "maximumError": "8kB"
+                }
               ],
               "outputHashing": "all"
             },
@@ -44,7 +52,6 @@
             }
           },
           "defaultConfiguration": "development"
-
         },
         "serve": {
           "builder": "@angular/build:dev-server",
@@ -74,11 +81,23 @@
               "node_modules/ngx-intl-tel-input/styles.css"
             ]
           }
+        },
+        "lint": {
+          "builder": "@angular-eslint/builder:lint",
+          "options": {
+            "lintFilePatterns": [
+              "src/**/*.ts",
+              "src/**/*.html"
+            ]
+          }
         }
       }
     }
   },
   "cli": {
-    "analytics": "f3b13438-1b83-4ef2-a829-c6ef20945151"
+    "analytics": "f3b13438-1b83-4ef2-a829-c6ef20945151",
+    "schematicCollections": [
+      "angular-eslint"
+    ]
   }
 }

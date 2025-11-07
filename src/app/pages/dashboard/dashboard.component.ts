@@ -1,4 +1,4 @@
-﻿import { Component, OnInit } from '@angular/core';
+﻿import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
@@ -41,7 +41,8 @@ export class DashboardComponent implements OnInit {
   // intervalles occupés par baie
   private intervalsByBay: Record<Bay, Interval[]> = { A: [], B: [] };
 
-  constructor(private readonly appointmentsSvc: AppointmentsService, public i18n: I18nService) {}
+  private readonly appointmentsSvc = inject(AppointmentsService);
+  public i18n = inject(I18nService);
 
   ngOnInit(): void {
     this.regenTimes();
