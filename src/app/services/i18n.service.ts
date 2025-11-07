@@ -1,21 +1,48 @@
 import { Injectable, inject } from '@angular/core';
-import FR from '../i18n/fr';
 import { TranslateService } from '@ngx-translate/core';
 
 @Injectable({ providedIn: 'root' })
 export class I18nService {
   // keep a fallback resource for synchronous lookups if needed
-  // fallback typed as unknown to avoid `any` usage
-  private fallback: Record<string, unknown> = { fr: FR };
+  // cache translations loaded from ngx-translate (assets/i18n/*.json)
+  private fallback: Record<string, Record<string, unknown>> = {};
 
-  // Prefer inject() for TranslateService and run init inline
+  // Prefer inject() for TranslateService
   private translate = inject(TranslateService);
-  // initialize default language
-  private _init = (() => {
+
+  constructor() {
+    // initialize default language and prime the fallback cache
     this.translate.setDefaultLang('fr');
+
+    // helper that attempts to load translations for a language using
+    // either `getTranslation(lang)` (if available on the runtime type)
+    // or `use(lang)` as a fallback. Both return an Observable of the
+    // translation object in typical ngx-translate implementations.
+    const load = (lang: string) => {
+      const maybeGetTranslation = (this.translate as any).getTranslation;
+      const loader = typeof maybeGetTranslation === 'function'
+        ? (this.translate as any).getTranslation(lang)
+        : this.translate.use(lang);
+
+      // subscribe with explicit typing to avoid implicit any
+      loader.subscribe((t: Record<string, unknown>) => {
+        this.fallback[lang] = t || {};
+      });
+    };
+
+    // load default translations into the fallback cache
+    load('fr');
+
+    // ensure the translate service is using a language
     if (!this.translate.currentLang) this.translate.use('fr');
-    return true;
-  })();
+
+    // keep cache up-to-date when language changes
+    if (this.translate.onLangChange) {
+      this.translate.onLangChange.subscribe((ev: any) => {
+        load(ev.lang);
+      });
+    }
+  }
 
   // get current language
   get currentLang(): string { return this.translate.currentLang || 'fr'; }
@@ -32,7 +59,7 @@ export class I18nService {
       ? Object.fromEntries(Object.entries(params).map(([k, v]) => [k, v == null ? '' : v]))
       : undefined;
 
-    // Try synchronous instant() first; if not available, fallback to our static resource
+    // Try synchronous instant() first; if not available, fallback to our cached resource
     const instant = this.translate.instant(key, safeParams);
 
     // If ngx-translate returned a translation (different from key) we still want to
@@ -52,7 +79,7 @@ export class I18nService {
       return out;
     }
 
-    // Fallback to local FR resources for sync lookup
+    // Fallback to cached translations for sync lookup
     const parts = key.split('.');
     let cur: unknown = this.fallback[this.currentLang] || {};
     for (const p of parts) {

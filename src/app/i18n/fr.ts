@@ -1,82 +1,10 @@
-// fichier de propriétés FR (prestation de preuve de concept)
+// fichier supprimé au profit des JSON dans src/assets/i18n/fr.json
+// Les traductions sont désormais chargées via @ngx-translate/core depuis
+// src/assets/i18n/fr.json. Ce fichier TS est laissé volontairement comme shim
+// inoffensif au cas où un import non détecté subsisterait pendant la transition.
 
-const FR = {
-  app: {
-    title: 'Bassenge Pneu',
-    brandShort: 'BassengePneu',
-    garage: 'Garage Pneu',
-    footerBy: '© {year} • Wadie Mokhtari',
-    menuAria: 'Menu',
-  },
-  nav: {
-    home: 'Accueil',
-    booking: 'Prise-rendez-vous',
-    clients: 'Clients'
-  },
-  phone: {
-    number: '+32 484 61 98 67',
-    call: '📞 {number}'
-  },
-  common: {
-    past: 'Passé',
-    free: 'Libre',
-    busy: 'Occupé',
-    indispo: 'Indispo',
-    unknownClient: 'Client inconnu'
-  },
-  dashboard: {
-    title: 'Prise-rendez-vous',
-    defaultDurationNote: 'durée par défaut 30 min',
-    slotsA: 'Pont (A)',
-    slotsB: 'Pont (B)'
-  },
-  toolbar: {
-    start: 'Début',
-    end: 'Fin',
-    step: 'Pas',
-    minutesShort: 'min'
-  },
-  slot: {
-    chooseClientAndService: 'Choisir client et service',
-    chooseService: 'Choisir un type de service',
-    chooseClient: 'Choisir un client',
-    reservePrefix: 'Réserver — ',
-    notEnoughSpace: 'Pas assez d\'espace pour {duration} min'
-  },
-  clients: {
-    title: 'Clients',
-    description: 'Gérez vos fiches clients et retrouvez-les en un clin d\'œil.',
-    clientCount: '{count} client(s)',
-    firstnamePlaceholder: 'Prénom *',
-    namePlaceholder: 'Nom *',
-    phonePlaceholder: 'Téléphone (BE) *',
-    vehiclePlaceholder: 'Véhicule (ex: Golf 7) *',
-    platePlaceholder: "Plaque d'immatriculation *",
-    emailPlaceholder: 'Adresse e-mail',
-    firstNameRequired: 'Le prénom est obligatoire.',
-    nameRequired: 'Le nom est obligatoire.',
-    phoneInvalid: 'Numéro belge invalide (ex. 0470 12 34 56 ou 02 123 45 67).',
-    vehicleRequired: 'Le véhicule est obligatoire.',
-    plateRequired: "La plaque d'immatriculation est obligatoire.",
-    addButton: 'Ajouter',
-    editButton: 'Modifier',
-    removeButton: 'Supprimer',
-    noClientTitle: 'Aucun client trouvé',
-    noClientMessage: "Ajoutez un client avec le formulaire ci-dessus ou recherchez autrement.",
-    newClient: 'Nouveau client',
-    save: 'Enregistrer',
-    cancel: 'Annuler',
-    paginationPrev: 'Précédent',
-    paginationNext: 'Suivant',
-    pageOf: 'Page {page} / {total}'
-  },
-  actions: {
-    addClientIcon: '👤+'
-  },
-  errors: {
-    loadAppointments: 'Impossible de charger les rendez-vous.'
-  }
-};
+// Si vous êtes sûr de vouloir une suppression complète, supprimez ce fichier manuellement
+// ou je peux le remplacer par un fichier README.
 
-export default FR;
-
+const _REMOVED = {};
+export default _REMOVED;
