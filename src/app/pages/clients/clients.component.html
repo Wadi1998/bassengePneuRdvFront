@@ -13,7 +13,7 @@
         <path d="M15 19a6 6 0 0 0-12 0"/>
         <circle cx="9" cy="7" r="4"/>
       </svg>
-      {{ filtered.length }} client(s)
+      {{ totalClient }} client(s)
     </span>
   </div>
 
@@ -144,6 +144,17 @@
         </button>
       </div>
     </div>
+  </div>
+
+  <!-- Pagination -->
+  <div *ngIf="totalClient > pageSize" class="flex justify-center items-center gap-4 py-6">
+    <button class="btn-cta px-3" [disabled]="page === 1" (click)="prevPage()">Précédent</button>
+    <span class="text-sm text-slate-300">
+      Page {{ page }} / {{ totalPages }}
+      <span class="mx-2">•</span>
+      {{ totalClient }} client(s)
+    </span>
+    <button class="btn-cta px-3" [disabled]="page === totalPages" (click)="nextPage()">Suivant</button>
   </div>
 
   <!-- Empty state -->

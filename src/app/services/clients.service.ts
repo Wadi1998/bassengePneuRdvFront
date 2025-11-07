@@ -21,4 +21,14 @@ export class ClientsService {
   remove(id: Client['id']): Observable<void> {
     return this.http.delete<void>(`${this.base}/${id}`);
   }
+
+  /**
+   * Récupère les clients paginés
+   * @param page Numéro de la page (commence à 1)
+   * @param pageSize Nombre d'éléments par page
+   */
+  listPaged(page: number, pageSize: number): Observable<{ items: Client[]; total: number }> {
+    const params = { page: page.toString(), pageSize: pageSize.toString() };
+    return this.http.get<{ items: Client[]; total: number }>(this.base, { params });
+  }
 }

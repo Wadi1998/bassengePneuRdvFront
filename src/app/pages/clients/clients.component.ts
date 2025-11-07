@@ -29,6 +29,15 @@ export class ClientsComponent implements OnInit, AfterViewInit {
   // 🎯 focus “Prénom”
   @ViewChild('firstNameInput') firstNameInput?: ElementRef<HTMLInputElement>;
 
+  // Pagination
+  page = 1;
+  pageSize = 20;
+  totalClient = 0;
+
+  get totalPages(): number {
+    return Math.ceil(this.totalClient / this.pageSize);
+  }
+
   constructor() {
     this.form = this.fb.group({
       firstName: ['', Validators.required],
@@ -40,6 +49,10 @@ export class ClientsComponent implements OnInit, AfterViewInit {
 
   // ========= Lifecycle =========
   ngOnInit(): void {
+    this.search.valueChanges.subscribe(() => {
+      this.page = 1; // On revient à la première page lors d'une nouvelle recherche
+      this.refreshList();
+    });
     this.refreshList();
   }
 
@@ -49,16 +62,37 @@ export class ClientsComponent implements OnInit, AfterViewInit {
 
   // ========= Data loading =========
   private refreshList(): void {
-    this.api.list().subscribe({
+    this.api.listPaged(this.page, this.pageSize).subscribe({
       next: (data) => {
-        // tri descendant par id si numériques, sinon on laisse tel quel
-        this.items = [...data];
+        this.items = [...data.items];
+        this.totalClient = data.total;
       },
       error: (err) => {
         console.error(err);
         this.toastr.error('Impossible de charger les clients.', 'Erreur réseau');
       }
     });
+  }
+
+  // Pagination navigation
+  goToPage(page: number): void {
+    if (page < 1 || page > this.totalPages) return;
+    this.page = page;
+    this.refreshList();
+  }
+
+  nextPage(): void {
+    if (this.page < this.totalPages) {
+      this.page++;
+      this.refreshList();
+    }
+  }
+
+  prevPage(): void {
+    if (this.page > 1) {
+      this.page--;
+      this.refreshList();
+    }
   }
 
   // ========= Getters / Helpers =========
