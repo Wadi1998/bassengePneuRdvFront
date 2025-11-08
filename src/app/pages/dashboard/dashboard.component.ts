@@ -1,6 +1,7 @@
 ﻿import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { firstValueFrom } from 'rxjs';
 
 import { AppointmentsService } from '../../services/appointments.service';
 import { Appointment } from '../../models/appointment.model';
@@ -175,5 +176,70 @@ export class DashboardComponent implements OnInit {
     if (this.date < todayIso) return true;
     if (this.date > todayIso) return false;
     return slot.getTime() < now.getTime();
+  }
+
+  // Exporter les rendez-vous du jour affiché
+  async exportPdfForDate(): Promise<void> {
+    this.loading = true;
+    try {
+      const results = await firstValueFrom(this.appointmentsSvc.listByDate(this.date));
+      const all = (results ?? []).slice();
+      all.sort((a, b) => {
+        const da = (a.date ?? '') + 'T' + (a.time ?? '00:00');
+        const db = (b.date ?? '') + 'T' + (b.time ?? '00:00');
+        return da.localeCompare(db);
+      });
+      const title = this.i18n.t('dashboard.exportTitle') + ` ${this.date}`;
+      await this.generatePdf(all, String(title), `rdvs_${this.date}.pdf`);
+    } catch (err) {
+      console.error(err);
+      alert(this.i18n.t('dashboard.exportError'));
+    } finally {
+      this.loading = false;
+    }
+  }
+
+  // Génère et télécharge un PDF à partir d'une liste d'appointments
+  private async generatePdf(all: Appointment[], title: string, filename: string): Promise<void> {
+    const { jsPDF } = await import('jspdf');
+    const doc = new jsPDF({ unit: 'pt', format: 'a4' });
+
+    doc.setFontSize(14);
+    doc.text(title, 40, 40);
+
+    doc.setFontSize(10);
+    let y = 70;
+    const lineHeight = 14;
+
+    if (all.length === 0) {
+      doc.text(this.i18n.t('dashboard.exportNoAppointments'), 40, y);
+    } else {
+      for (const a of all) {
+        const line = this.appointmentLine(a);
+        const wrapped = doc.splitTextToSize(line, 520);
+        for (const l of wrapped) {
+          if (y > 800) {
+            doc.addPage();
+            y = 40;
+          }
+          doc.text(l, 40, y);
+          y += lineHeight;
+        }
+        y += 4;
+      }
+    }
+
+    doc.save(filename);
+  }
+
+  // Helper: format ligne de RDV
+  private appointmentLine(a: Appointment): string {
+    const date = a.date ?? '';
+    const time = a.time ?? '';
+    const bay = a.bay ? `(${a.bay}) ` : '';
+    const who = a.clientName ? `${a.clientName} • ` : '';
+    const service = a.serviceType ?? '';
+    const dur = a.duration ? `${a.duration}m` : '';
+    return `${date} ${time} ${bay}${who}${service} ${dur}`.trim();
   }
 }

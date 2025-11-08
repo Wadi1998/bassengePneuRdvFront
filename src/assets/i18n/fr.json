@@ -26,7 +26,11 @@
     "title": "Prise-rendez-vous",
     "defaultDurationNote": "durée par défaut 30 min",
     "slotsA": "Pont (A)",
-    "slotsB": "Pont (B)"
+    "slotsB": "Pont (B)",
+    "exportPdf": "Exporter en PDF",
+    "exportTitle": "Liste des rendez-vous",
+    "exportNoAppointments": "Aucun rendez-vous pour la période sélectionnée.",
+    "exportError": "Erreur lors de l'export PDF."
   },
   "toolbar": {
     "start": "Début",
