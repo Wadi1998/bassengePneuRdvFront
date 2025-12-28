@@ -41,6 +41,8 @@ export class ClientsComponent implements OnInit, AfterViewInit {
   editForm: FormGroup;
   currentClientId: number | null = null; // Correction du type de currentClientId
 
+  loading = false;
+
   get totalPages(): number {
     return Math.ceil(this.totalClient / this.pageSize);
   }
@@ -81,14 +83,17 @@ export class ClientsComponent implements OnInit, AfterViewInit {
 
   // ========= Data loading =========
   private refreshList(): void {
+    this.loading = true;
     this.api.listPaged(this.page, this.pageSize).subscribe({
       next: (data) => {
         this.items = [...data.items];
         this.totalClient = data.total;
+        this.loading = false;
       },
       error: (err) => {
         console.error(err);
         this.toastr.error('Impossible de charger les clients.', 'Erreur réseau');
+        this.loading = false;
       }
     });
   }
