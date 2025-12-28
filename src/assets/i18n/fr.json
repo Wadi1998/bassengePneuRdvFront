@@ -23,7 +23,7 @@
     "unknownClient": "Client inconnu"
   },
   "dashboard": {
-    "title": "Prise-rendez-vous",
+    "title": "Calendrier",
     "defaultDurationNote": "durée par défaut 30 min",
     "slotsA": "Pont (A)",
     "slotsB": "Pont (B)",
