@@ -1,7 +1,7 @@
 ﻿<!-- App Shell -->
 <div class="min-h-screen flex bg-brand-dark text-slate-100">
   <!-- SIDEBAR -->
-  <aside class="hidden md:flex md:flex-col md:w-72
+  <aside *ngIf="isLoggedIn" class="hidden md:flex md:flex-col md:w-72
                 bg-gradient-to-b from-brand-mid to-brand-dark border-r border-white/10">
     <!-- Logo -->
     <div class="h-16 flex items-center px-5 border-b border-white/10">
@@ -49,7 +49,7 @@
       <!-- TOPBAR -->
       <header class="h-16 bg-brand-mid/60 backdrop-blur border-b border-white/10
                      flex items-center px-4 md:px-6 gap-3">
-        <button class="md:hidden inline-flex items-center justify-center h-10 w-10 rounded-xl border border-white/10"
+        <button *ngIf="isLoggedIn" class="md:hidden inline-flex items-center justify-center h-10 w-10 rounded-xl border border-white/10"
                 (click)="open = !open" aria-label="{{ i18n.t('app.menuAria') }}">
           <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.6">
             <path d="M4 6h16M4 12h16M4 18h16" />
@@ -65,11 +65,12 @@
           </svg>
           <span>{{ today | date }}</span>
 
-          <!-- Language switcher (pro, runtime) -->
           <select aria-label="Language" (change)="i18n.setLang($any($event.target).value)" class="ml-4 bg-transparent text-slate-300">
             <option value="fr" [selected]="i18n.currentLang === 'fr'">FR</option>
             <option value="en" [selected]="i18n.currentLang === 'en'">EN</option>
           </select>
+
+          <button *ngIf="isLoggedIn" (click)="logout()" class="btn-primary text-xs px-3 py-1 ml-4">Déconnexion</button>
         </div>
       </header>
 

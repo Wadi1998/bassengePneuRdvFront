@@ -2,6 +2,7 @@
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import {CommonModule} from '@angular/common';
 import { I18nService } from './services/i18n.service';
+import { AuthService } from './services/auth.service';
 
 @Component({
   standalone: true,
@@ -15,4 +16,14 @@ export class AppComponent {
 
   // Prefer `inject()` (standalone / functional style)
   public i18n = inject(I18nService);
+  private auth = inject(AuthService);
+
+  get isLoggedIn(): boolean {
+    return this.auth.isLoggedIn();
+  }
+
+  logout() {
+    this.auth.logout();
+    window.location.href = '/login';
+  }
 }

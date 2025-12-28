@@ -1,0 +1,41 @@
+import { CanActivateFn } from '@angular/router';
+
+export const loginGuard: CanActivateFn = (route, state) => {
+  if (localStorage.getItem('isLoggedIn') === 'true') {
+    return true;
+  }
+  window.location.href = '/login';
+  return false;
+};
+import { Component } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
+
+@Component({
+  selector: 'app-login',
+  standalone: true,
+  imports: [CommonModule, ReactiveFormsModule],
+  templateUrl: './login.component.html'
+})
+export class LoginComponent {
+  form: FormGroup;
+  error: string | null = null;
+
+  constructor(private fb: FormBuilder, private router: Router) {
+    this.form = this.fb.group({
+      username: ['', Validators.required],
+      password: ['', Validators.required]
+    });
+  }
+
+  login() {
+    const { username, password } = this.form.value;
+    if (username === 'admin' && password === 'admin') {
+      localStorage.setItem('isLoggedIn', 'true');
+      this.router.navigate(['/dashboard']);
+    } else {
+      this.error = 'Identifiants invalides';
+    }
+  }
+}

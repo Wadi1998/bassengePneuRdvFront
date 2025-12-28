@@ -52,6 +52,7 @@
     "vehiclePlaceholder": "Vehicle (eg: Golf 7) *",
     "platePlaceholder": "License plate *",
     "emailPlaceholder": "Email address",
+    "searchPlaceholder": "Search (name, first name, phone, vehicle)",
     "firstNameRequired": "First name is required.",
     "nameRequired": "Name is required.",
     "phoneInvalid": "Invalid Belgian number (ex. 0470 12 34 56 or 02 123 45 67).",

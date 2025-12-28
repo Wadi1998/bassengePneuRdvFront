@@ -6,6 +6,7 @@ import { firstValueFrom } from 'rxjs';
 import { AppointmentsService } from '../../services/appointments.service';
 import { Appointment } from '../../models/appointment.model';
 import { I18nService } from '../../services/i18n.service';
+import { AuthService } from '../../services/auth.service';
 
 type Bay = 'A' | 'B';
 
@@ -44,6 +45,7 @@ export class DashboardComponent implements OnInit {
 
   private readonly appointmentsSvc = inject(AppointmentsService);
   public i18n = inject(I18nService);
+  private auth = inject(AuthService);
 
   ngOnInit(): void {
     this.regenTimes();
