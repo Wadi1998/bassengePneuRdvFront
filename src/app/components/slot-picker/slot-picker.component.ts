@@ -21,6 +21,12 @@ interface SlotVM {
   serviceType?: string;
   note?: string;
   appointmentId?: number;    // ID du rendez-vous pour la suppression
+  // Propriétés pour le regroupement visuel
+  isFirstOfGroup?: boolean;  // Premier slot d'un rendez-vous multi-slots
+  isLastOfGroup?: boolean;   // Dernier slot d'un rendez-vous multi-slots
+  isMiddleOfGroup?: boolean; // Slot au milieu d'un rendez-vous multi-slots
+  slotCount?: number;        // Nombre total de slots du rendez-vous
+  duration?: number;         // Durée totale du rendez-vous en minutes
 }
 
 @Component({
@@ -40,6 +46,7 @@ export class SlotPickerComponent implements OnChanges {
   @Input() canBook!: boolean;
   @Input() needService!: boolean;
   @Input() needClient!: boolean;
+  @Input() isLoading: boolean = false;
 
   // ---------- Outputs ----------
   @Output() pick = new EventEmitter<string>();                         // émet l'heure "HH:mm"
@@ -109,12 +116,27 @@ export class SlotPickerComponent implements OnChanges {
         if (isPast) {
           out.push({ time, state: 'past' });
         } else if (overlapAppt) {
+          const apptStart = this.parseHm(overlapAppt.time);
+          const apptDuration = overlapAppt.duration || this.DISPLAY_STEP;
+          const apptEnd = apptStart + apptDuration;
+          const slotCount = Math.ceil(apptDuration / this.DISPLAY_STEP);
+
+          // Déterminer la position du slot dans le rendez-vous
+          const isFirstOfGroup = slotStart === apptStart;
+          const isLastOfGroup = slotEndDisplay >= apptEnd;
+          const isMiddleOfGroup = !isFirstOfGroup && !isLastOfGroup;
+
           out.push({
             time,
             state: 'busy',
             clientName: overlapAppt.clientFullName || overlapAppt.clientName,
             serviceType: overlapAppt.serviceType,
-            appointmentId: overlapAppt.id
+            appointmentId: overlapAppt.id,
+            isFirstOfGroup,
+            isLastOfGroup,
+            isMiddleOfGroup,
+            slotCount,
+            duration: apptDuration
           });
         } else if (!windowFree) {
           out.push({
@@ -174,7 +196,9 @@ export class SlotPickerComponent implements OnChanges {
     return h * 60 + (m || 0);
   }
 
-  trackByTime(_: number, s: SlotVM) { return s.time; }
+  trackByTime(_: number, s: SlotVM) {
+    return `${s.time}-${s.state}-${s.appointmentId || 'free'}`;
+  }
 
   // ---------- Interaction ----------
   onClick(time: string, state: SlotState) {

@@ -79,6 +79,7 @@ export class AppointmentsComponent implements OnInit {
   }
 
   async refresh(): Promise<void> {
+    this.isLoading = true;
     try {
       const items = await lastValueFrom(this.appts.listByDate(this.date));
 
@@ -94,7 +95,9 @@ export class AppointmentsComponent implements OnInit {
       this.items = [];
       this.cdr.markForCheck();
       this.rebuildChildren();
-
+    } finally {
+      this.isLoading = false;
+      this.cdr.markForCheck();
     }
   }
 
@@ -203,12 +206,17 @@ export class AppointmentsComponent implements OnInit {
 
   get clientValid(): boolean { return !!this.selectedClient; }
   get serviceValid(): boolean { return !!this.serviceType?.trim(); }
-  get canBook(): boolean { return this.clientValid && this.serviceValid; }
+  get canBook(): boolean { return this.clientValid && this.serviceValid && !this.isLoading; }
 
   async onPickA(time: string) { await this.createFor('A', time); }
   async onPickB(time: string) { await this.createFor('B', time); }
 
   private async createFor(bay: 'A' | 'B', time: string) {
+    // Bloquer si déjà en cours de chargement
+    if (this.isLoading) {
+      return;
+    }
+
     if (!this.selectedClient) {
       this.toastr.warning(this.i18n.t('appointments.toasts.chooseClientBefore'));
       return;
@@ -218,6 +226,8 @@ export class AppointmentsComponent implements OnInit {
       this.toastr.warning(this.i18n.t('appointments.toasts.serviceRequired'));
       return;
     }
+
+    this.isLoading = true;
 
     const a: AppointmentRequest = {
       date: this.date,
@@ -234,6 +244,8 @@ export class AppointmentsComponent implements OnInit {
       this.toastr.success(this.i18n.t('appointments.toasts.booked', { time, bay }), this.i18n.t('appointments.toasts.bookedTitle'));
     } catch {
       this.toastr.error(this.i18n.t('appointments.toasts.bookError'), 'Erreur réseau');
+      this.isLoading = false;
+      this.cdr.markForCheck();
     }
   }
 
@@ -248,8 +260,12 @@ export class AppointmentsComponent implements OnInit {
   }
 
   async onDeleteAppointment(appointmentId: number) {
+    if (this.isLoading) return;
+
     const confirmMessage = this.i18n.t('appointments.confirmDelete') || 'Voulez-vous vraiment supprimer ce rendez-vous ?';
     if (!confirm(confirmMessage)) return;
+
+    this.isLoading = true;
 
     try {
       await lastValueFrom(this.appts.remove(appointmentId));
@@ -263,6 +279,8 @@ export class AppointmentsComponent implements OnInit {
         this.i18n.t('appointments.toasts.deleteError') || 'Impossible de supprimer le rendez-vous',
         'Erreur'
       );
+      this.isLoading = false;
+      this.cdr.markForCheck();
     }
   }
 

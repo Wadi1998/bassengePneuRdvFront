@@ -1,85 +1,106 @@
-﻿<!-- Liste scrollable de créneaux -->
-<div class="h-[560px] overflow-auto pr-1 space-y-2">
-  <div
-    *ngFor="let s of slots; trackBy: trackByTime"
-    class="w-full text-left rounded-xl border px-3 py-3 transition
-           flex items-center gap-3
-           border-white/10
-           bg-white/5"
-    [ngClass]="{
-      'hover:bg-white/10 cursor-pointer': s.state === 'free',
-      'ring-1 ring-emerald-400/30': s.state === 'free' && canBook,
-      'ring-1 ring-rose-400/30': s.state === 'busy',
-      'ring-1 ring-amber-400/30': (s.state === 'free' && !canBook) || s.state === 'indispo',
-      'opacity-60': s.state === 'past'
-    }"
-    [title]="(s.state === 'free' && !canBook)
-              ? (needService && needClient ? i18n.t('slot.chooseClientAndService')
-                 : (needService ? i18n.t('slot.chooseService') : i18n.t('slot.chooseClient')))
-              : (s.note || '')"
-    (click)="onClick(s.time, s.state)"
-  >
-    <!-- Heure -->
-    <span class="w-16 shrink-0 font-mono tracking-tight text-sm opacity-90">
-      {{ s.time }}
-    </span>
+﻿<!-- Conteneur avec overlay de chargement -->
+<div class="relative">
+  <!-- Overlay de chargement -->
+  <div *ngIf="isLoading" class="absolute inset-0 z-10 bg-slate-900/60 backdrop-blur-sm rounded-xl flex items-center justify-center">
+    <div class="flex flex-col items-center gap-3">
+      <svg class="animate-spin h-8 w-8 text-sky-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+      </svg>
+      <span class="text-sm text-slate-300">Chargement...</span>
+    </div>
+  </div>
 
-    <!-- Libellé + infos -->
-    <div class="flex-1 min-w-0">
-      <div class="truncate"
-           [ngClass]="{
-             'text-slate-200': s.state === 'free',
-             'text-slate-300': s.state === 'busy',
-             'text-slate-400': s.state === 'past' || s.state === 'indispo'
-           }">
+  <!-- Liste des créneaux -->
+  <div class="space-y-3" [class.opacity-50]="isLoading" [class.pointer-events-none]="isLoading">
+  <ng-container *ngFor="let s of slots; trackBy: trackByTime">
+    <div
+      class="w-full text-left border px-6 transition flex items-center gap-5 border-white/10 bg-white/5 rounded-xl"
+      [ngClass]="{
+        'hover:bg-white/10 cursor-pointer ring-1 ring-emerald-400/30 py-5': s.state === 'free' && canBook,
+        'ring-1 ring-amber-400/30 py-5': (s.state === 'free' && !canBook) || s.state === 'indispo',
+        'opacity-60 py-5': s.state === 'past',
+        'ring-1 ring-rose-400/30': s.state === 'busy',
+        'py-5': s.state === 'busy' && s.isFirstOfGroup && s.isLastOfGroup,
+        'rounded-t-xl rounded-b-none pt-5 pb-2 -mb-1 border-b-0': s.state === 'busy' && s.isFirstOfGroup && !s.isLastOfGroup,
+        'rounded-b-xl rounded-t-none pb-5 pt-2 -mt-1 border-t-0': s.state === 'busy' && s.isLastOfGroup && !s.isFirstOfGroup,
+        'rounded-none py-2 -my-0.5 border-t-0 border-b-0': s.state === 'busy' && s.isMiddleOfGroup
+      }"
+      [title]="(s.state === 'free' && !canBook)
+                ? (needService && needClient ? i18n.t('slot.chooseClientAndService')
+                   : (needService ? i18n.t('slot.chooseService') : i18n.t('slot.chooseClient')))
+                : (s.note || '')"
+      (click)="onClick(s.time, s.state)"
+    >
+      <!-- Heure -->
+      <span class="w-20 shrink-0 font-mono tracking-tight text-base font-medium">
+        {{ s.time }}
+      </span>
+
+      <!-- Libellé + infos -->
+      <div class="flex-1 min-w-0">
+        <div class="truncate text-base"
+             [ngClass]="{
+               'text-slate-200': s.state === 'free',
+               'text-slate-300': s.state === 'busy',
+               'text-slate-400': s.state === 'past' || s.state === 'indispo'
+             }">
+          <ng-container [ngSwitch]="s.state">
+            <span *ngSwitchCase="'free'">{{ i18n.t('common.free') }}</span>
+            <span *ngSwitchCase="'busy'">
+              <!-- Afficher les infos seulement sur le premier slot du groupe -->
+              <ng-container *ngIf="s.isFirstOfGroup">
+                {{ s.clientName || i18n.t('common.unknownClient') }}
+                <ng-container *ngIf="s.serviceType">{{ i18n.t('slot.sep') }} {{ s.serviceType }}</ng-container>
+              </ng-container>
+              <!-- Pour les autres slots, afficher une ligne de continuation -->
+              <span *ngIf="!s.isFirstOfGroup" class="text-slate-500 text-sm italic">↳ suite du rendez-vous</span>
+            </span>
+            <span *ngSwitchCase="'indispo'">{{ i18n.t('common.indispo') }}</span>
+            <span *ngSwitchCase="'past'">{{ i18n.t('common.past') }}</span>
+          </ng-container>
+        </div>
+      </div>
+
+      <!-- Bouton supprimer seulement sur le premier slot du groupe -->
+      <button
+        *ngIf="s.state === 'busy' && s.appointmentId && s.isFirstOfGroup"
+        type="button"
+        (click)="onDelete($event, s.appointmentId)"
+        class="shrink-0 p-2.5 rounded-lg bg-rose-500/20 border border-rose-500/40 text-rose-300 hover:bg-rose-500/30 hover:text-rose-200 transition"
+        [title]="i18n.t('appointments.deleteAppointment') || 'Supprimer le rendez-vous'"
+      >
+        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M3 6h18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M10 11v6M14 11v6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </button>
+
+      <!-- Tag à droite - seulement sur le premier slot du groupe pour busy -->
+      <span
+        *ngIf="s.state !== 'busy' || s.isFirstOfGroup"
+        class="text-sm px-3 py-1.5 rounded-full border shrink-0 font-medium"
+        [ngClass]="{
+          'border-emerald-400/40 bg-emerald-400/10 text-emerald-300': s.state === 'free' && canBook,
+          'border-rose-400/40 bg-rose-400/10 text-rose-300': s.state === 'busy',
+          'border-amber-400/40 bg-amber-400/10 text-amber-300': (s.state === 'free' && !canBook) || s.state === 'indispo',
+          'border-white/20 bg-white/5 text-slate-400': s.state === 'past'
+        }">
         <ng-container [ngSwitch]="s.state">
-          <span *ngSwitchCase="'free'">{{ i18n.t('common.free') }}</span>
-          <span *ngSwitchCase="'busy'">
-            {{ s.clientName || i18n.t('common.unknownClient') }}
-            <ng-container *ngIf="s.serviceType">{{ i18n.t('slot.sep') }} {{ s.serviceType }}</ng-container>
+          <span *ngSwitchCase="'free'">
+            {{ canBook
+            ? (i18n.t('slot.reservePrefix') + (serviceType || i18n.t('slot.chooseService')))
+            : (needService && needClient ? i18n.t('slot.chooseClientAndService')
+              : (needService ? i18n.t('slot.chooseService') : i18n.t('slot.chooseClient'))) }}
           </span>
+          <span *ngSwitchCase="'busy'">{{ s.duration }} min</span>
           <span *ngSwitchCase="'indispo'">{{ i18n.t('common.indispo') }}</span>
           <span *ngSwitchCase="'past'">{{ i18n.t('common.past') }}</span>
         </ng-container>
-      </div>
+      </span>
     </div>
-
-    <!-- Bouton supprimer pour les créneaux occupés -->
-    <button
-      *ngIf="s.state === 'busy' && s.appointmentId"
-      type="button"
-      (click)="onDelete($event, s.appointmentId)"
-      class="shrink-0 p-2 rounded-lg bg-rose-500/20 border border-rose-500/40 text-rose-300 hover:bg-rose-500/30 hover:text-rose-200 transition"
-      [title]="i18n.t('appointments.deleteAppointment') || 'Supprimer le rendez-vous'"
-    >
-      <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M3 6h18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-        <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-        <path d="M10 11v6M14 11v6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-      </svg>
-    </button>
-
-    <!-- Tag à droite -->
-    <span
-      class="text-xs px-2.5 py-1 rounded-full border shrink-0"
-      [ngClass]="{
-        'border-emerald-400/40 bg-emerald-400/10 text-emerald-300': s.state === 'free' && canBook,
-        'border-rose-400/40 bg-rose-400/10 text-rose-300': s.state === 'busy',
-        'border-amber-400/40 bg-amber-400/10 text-amber-300': (s.state === 'free' && !canBook) || s.state === 'indispo',
-        'border-white/20 bg-white/5 text-slate-400': s.state === 'past'
-      }">
-      <ng-container [ngSwitch]="s.state">
-        <span *ngSwitchCase="'free'">
-          {{ canBook
-          ? (i18n.t('slot.reservePrefix') + (serviceType || i18n.t('slot.chooseService')))
-          : (needService && needClient ? i18n.t('slot.chooseClientAndService')
-            : (needService ? i18n.t('slot.chooseService') : i18n.t('slot.chooseClient'))) }}
-        </span>
-        <span *ngSwitchCase="'busy'">{{ i18n.t('common.busy') }}</span>
-        <span *ngSwitchCase="'indispo'">{{ i18n.t('common.indispo') }}</span>
-        <span *ngSwitchCase="'past'">{{ i18n.t('common.past') }}</span>
-      </ng-container>
-    </span>
-  </div>
+  </ng-container>
+</div>
 </div>
