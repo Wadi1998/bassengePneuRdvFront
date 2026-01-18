@@ -1,4 +1,4 @@
-﻿import { Component, OnInit, ChangeDetectorRef, ViewChildren, QueryList, inject } from '@angular/core';
+﻿﻿import { Component, OnInit, ChangeDetectorRef, ViewChildren, QueryList, inject } from '@angular/core';
 import { CommonModule, NgFor, NgIf, UpperCasePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { lastValueFrom } from 'rxjs';
@@ -7,8 +7,10 @@ import { I18nService } from '../../services/i18n.service';
 
 import { Appointment, AppointmentRequest, AppointmentResponse } from '../../models/appointment.model';
 import { Client } from '../../models/client.model';
+import { CarResponse } from '../../models/car.model';
 import { AppointmentsService } from '../../services/appointments.service';
 import { ClientsService } from '../../services/clients.service';
+import { CarsService } from '../../services/cars.service';
 import { SlotPickerComponent } from '../../components/slot-picker/slot-picker.component';
 
 @Component({
@@ -53,6 +55,12 @@ export class AppointmentsComponent implements OnInit {
   showClientPicker = false;
   clientSearch = '';
 
+  // Gestion des voitures du client
+  clientCars: CarResponse[] = [];
+  selectedCar: CarResponse | null = null;
+  showCarPicker = false;
+  isLoadingCars = false;
+
   serviceType = '';
   showServiceError = false;
 
@@ -63,6 +71,7 @@ export class AppointmentsComponent implements OnInit {
 
   private appts = inject(AppointmentsService);
   private clientsApi = inject(ClientsService);
+  private carsApi = inject(CarsService);
   private toastr = inject(ToastrService);
   public i18n = inject(I18nService);
   private cdr = inject(ChangeDetectorRef);
@@ -188,13 +197,57 @@ export class AppointmentsComponent implements OnInit {
     );
   }
 
-  pickClient(c: Client) {
+  async pickClient(c: Client) {
     this.selectedClient = c;
     this.showClientPicker = false;
+    this.selectedCar = null;
+    this.clientCars = [];
+
+    // Charger les voitures du client
+    await this.loadClientCars(c.id);
+
+    // Si une seule voiture, la sélectionner automatiquement
+    if (this.clientCars.length === 1) {
+      this.selectedCar = this.clientCars[0];
+    } else if (this.clientCars.length > 1) {
+      // Ouvrir le picker de voiture si plusieurs voitures
+      this.showCarPicker = true;
+    }
+  }
+
+  async loadClientCars(clientId: number) {
+    this.isLoadingCars = true;
+    try {
+      this.clientCars = await lastValueFrom(this.carsApi.getByClientId(clientId));
+    } catch (err) {
+      console.error('Erreur lors du chargement des voitures', err);
+      this.clientCars = [];
+    } finally {
+      this.isLoadingCars = false;
+      this.cdr.markForCheck();
+    }
+  }
+
+  pickCar(car: CarResponse) {
+    this.selectedCar = car;
+    this.showCarPicker = false;
+  }
+
+  clearCar() {
+    this.selectedCar = null;
+  }
+
+  formatCarInfo(car: CarResponse | null): string {
+    if (!car) return '';
+    const parts = [car.brand, car.model];
+    if (car.licensePlate) parts.push(`(${car.licensePlate})`);
+    return parts.filter(Boolean).join(' ');
   }
 
   clearClient() {
     this.selectedClient = null;
+    this.selectedCar = null;
+    this.clientCars = [];
   }
 
   fullName(c: Client | null): string {
@@ -210,8 +263,9 @@ export class AppointmentsComponent implements OnInit {
   }
 
   get clientValid(): boolean { return !!this.selectedClient; }
+  get carValid(): boolean { return !!this.selectedCar || this.clientCars.length === 0; }
   get serviceValid(): boolean { return !!this.serviceType?.trim(); }
-  get canBook(): boolean { return this.clientValid && this.serviceValid && !this.isLoading; }
+  get canBook(): boolean { return this.clientValid && this.carValid && this.serviceValid && !this.isLoading; }
 
   async onPickA(time: string) { await this.createFor('A', time); }
   async onPickB(time: string) { await this.createFor('B', time); }
@@ -224,6 +278,10 @@ export class AppointmentsComponent implements OnInit {
 
     if (!this.selectedClient) {
       this.toastr.warning(this.i18n.t('appointments.toasts.chooseClientBefore'));
+      return;
+    }
+    if (this.clientCars.length > 0 && !this.selectedCar) {
+      this.toastr.warning(this.i18n.t('appointments.toasts.chooseCarBefore') || 'Veuillez sélectionner une voiture');
       return;
     }
     if (!this.serviceValid) {
@@ -240,6 +298,7 @@ export class AppointmentsComponent implements OnInit {
       duration: this.duration,
       bay,
       clientId: Number(this.selectedClient.id),
+      carId: this.selectedCar?.id,
       serviceType: this.serviceType.trim()
     };
 

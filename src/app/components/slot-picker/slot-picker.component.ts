@@ -1,4 +1,4 @@
-﻿import { ChangeDetectionStrategy,
+﻿﻿import { ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
   EventEmitter,
@@ -8,7 +8,7 @@
   SimpleChanges,
   inject
 } from '@angular/core';
-import { CommonModule, NgFor, NgIf, NgSwitch, NgSwitchCase } from '@angular/common';
+import { CommonModule, NgFor, NgIf } from '@angular/common';
 import { Appointment } from '../../models/appointment.model';
 import { I18nService } from '../../services/i18n.service';
 
@@ -16,9 +16,11 @@ type SlotState = 'free' | 'busy' | 'past' | 'indispo';
 
 interface SlotVM {
   time: string;              // "HH:mm" (début du slot affiché)
+  endTime?: string;          // "HH:mm" (fin du rendez-vous pour affichage groupé)
   state: SlotState;
   clientName?: string;
   serviceType?: string;
+  carInfo?: string;          // Info voiture
   note?: string;
   appointmentId?: number;    // ID du rendez-vous pour la suppression
   // Propriétés pour le regroupement visuel
@@ -33,7 +35,7 @@ interface SlotVM {
   standalone: true,
   selector: 'app-slot-picker',
   templateUrl: './slot-picker.component.html',
-  imports: [CommonModule, NgFor, NgIf, NgSwitch, NgSwitchCase],
+  imports: [CommonModule, NgFor, NgIf],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SlotPickerComponent implements OnChanges {
@@ -98,6 +100,9 @@ export class SlotPickerComponent implements OnChanges {
 
     const out: SlotVM[] = [];
 
+    // Set pour tracker les rendez-vous déjà affichés
+    const displayedAppointments = new Set<number>();
+
     for (let h = this.START_HOUR; h < this.END_HOUR; h++) {
       for (let m = 0; m < 60; m += this.DISPLAY_STEP) {
         const time = this.hm(h, m);
@@ -119,25 +124,35 @@ export class SlotPickerComponent implements OnChanges {
           const apptStart = this.parseHm(overlapAppt.time);
           const apptDuration = overlapAppt.duration || this.DISPLAY_STEP;
           const apptEnd = apptStart + apptDuration;
-          const slotCount = Math.ceil(apptDuration / this.DISPLAY_STEP);
 
-          // Déterminer la position du slot dans le rendez-vous
+          // Afficher un seul slot groupé pour tout le rendez-vous
           const isFirstOfGroup = slotStart === apptStart;
-          const isLastOfGroup = slotEndDisplay >= apptEnd;
-          const isMiddleOfGroup = !isFirstOfGroup && !isLastOfGroup;
 
-          out.push({
-            time,
-            state: 'busy',
-            clientName: overlapAppt.clientFullName || overlapAppt.clientName,
-            serviceType: overlapAppt.serviceType,
-            appointmentId: overlapAppt.id,
-            isFirstOfGroup,
-            isLastOfGroup,
-            isMiddleOfGroup,
-            slotCount,
-            duration: apptDuration
-          });
+          if (isFirstOfGroup && overlapAppt.id && !displayedAppointments.has(overlapAppt.id)) {
+            // Marquer ce rendez-vous comme affiché
+            displayedAppointments.add(overlapAppt.id);
+
+            // Calculer l'heure de fin
+            const endHour = Math.floor(apptEnd / 60);
+            const endMin = apptEnd % 60;
+            const endTime = this.hm(endHour, endMin);
+
+            out.push({
+              time,
+              endTime,
+              state: 'busy',
+              clientName: overlapAppt.clientFullName || overlapAppt.clientName,
+              serviceType: overlapAppt.serviceType,
+              carInfo: overlapAppt.carInfo,
+              appointmentId: overlapAppt.id,
+              isFirstOfGroup: true,
+              isLastOfGroup: true,
+              isMiddleOfGroup: false,
+              slotCount: Math.ceil(apptDuration / this.DISPLAY_STEP),
+              duration: apptDuration
+            });
+          }
+          // Ne rien ajouter pour les slots suivants du même rendez-vous
         } else if (!windowFree) {
           out.push({
             time,
