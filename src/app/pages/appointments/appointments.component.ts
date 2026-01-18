@@ -25,6 +25,11 @@ export class AppointmentsComponent implements OnInit {
   // force (dé)montage des slot-pickers via *ngIf
   showSlots = true;
 
+  // Getter pour le template - convertit la date string en Date object
+  get dateObj(): Date {
+    return this.parseDate(this.date);
+  }
+
   // --- helpers date locale (évite toISOString/UTC) ---
   private pad(n: number): string {
     return n < 10 ? `0${n}` : `${n}`;
