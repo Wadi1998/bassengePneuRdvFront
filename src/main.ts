@@ -1,12 +1,18 @@
-﻿import 'zone.js';
+﻿﻿import 'zone.js';
 import { bootstrapApplication } from '@angular/platform-browser';
 import { provideRouter } from '@angular/router';
 import { provideHttpClient } from '@angular/common/http';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { provideToastr } from 'ngx-toastr';
+import { LOCALE_ID } from '@angular/core';
+import { registerLocaleData } from '@angular/common';
+import localeFr from '@angular/common/locales/fr';
 
 import { AppComponent } from './app/app.component';
 import { routes } from './app/app.routes';
+
+// Enregistrer la locale française
+registerLocaleData(localeFr, 'fr');
 
 // ngx-translate providers
 import { TranslateLoader, TranslateModule } from '@ngx-translate/core';
@@ -32,6 +38,7 @@ bootstrapApplication(AppComponent, {
       progressBar: true,
       preventDuplicates: true,
     }),                                // ✅ fournit ToastConfig + ToastrService
+    { provide: LOCALE_ID, useValue: 'fr-FR' },  // ✅ locale française
 
     // Import ngx-translate providers via providers-from-module so TranslateService + loader are available
     importProvidersFrom(

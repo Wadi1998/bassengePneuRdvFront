@@ -58,19 +58,30 @@
 
         <div class="font-semibold">{{ i18n.t('app.garage') }}</div>
 
-        <div class="ml-auto hidden sm:flex items-center gap-3 text-sm text-slate-300">
-          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
-            <path d="M3 12a9 9 0 1 0 18 0 9 9 0 0 0-18 0Z" />
-            <path d="M12 7v5l3 3" />
-          </svg>
-          <span>{{ today | date }}</span>
+        <div class="ml-auto hidden sm:flex items-center gap-4 text-sm text-slate-300">
+          <div class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10">
+            <svg class="h-4 w-4 text-sky-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+              <path d="M3 12a9 9 0 1 0 18 0 9 9 0 0 0-18 0Z" />
+              <path d="M12 7v5l3 3" />
+            </svg>
+            <span>{{ today | date:'fullDate' }}</span>
+          </div>
 
-          <select aria-label="Language" (change)="i18n.setLang($any($event.target).value)" class="ml-4 bg-transparent text-slate-300">
-            <option value="fr" [selected]="i18n.currentLang === 'fr'">FR</option>
-            <option value="en" [selected]="i18n.currentLang === 'en'">EN</option>
+          <select aria-label="Language" (change)="i18n.setLang($any($event.target).value)"
+                  class="px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-slate-300 cursor-pointer hover:bg-white/10 transition">
+            <option value="fr" [selected]="i18n.currentLang === 'fr'">🇫🇷 FR</option>
+            <option value="en" [selected]="i18n.currentLang === 'en'">🇬🇧 EN</option>
           </select>
 
-          <button *ngIf="isLoggedIn" (click)="logout()" class="btn-primary text-xs px-3 py-1 ml-4">Déconnexion</button>
+          <button *ngIf="isLoggedIn" (click)="logout()"
+                  class="flex items-center gap-2 px-4 py-2 rounded-lg bg-rose-500/10 border border-rose-500/30 text-rose-300 hover:bg-rose-500/20 transition text-sm font-medium">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+              <polyline points="16 17 21 12 16 7"/>
+              <line x1="21" y1="12" x2="9" y2="12"/>
+            </svg>
+            Déconnexion
+          </button>
         </div>
       </header>
 

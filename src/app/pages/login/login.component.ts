@@ -12,6 +12,7 @@ import { Router } from '@angular/router';
 export class LoginComponent {
   form: FormGroup;
   error: string | null = null;
+  currentYear = new Date().getFullYear();
 
   constructor(private fb: FormBuilder, private router: Router) {
     this.form = this.fb.group({
