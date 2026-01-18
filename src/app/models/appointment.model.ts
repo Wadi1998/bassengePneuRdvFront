@@ -1,22 +1,42 @@
-﻿export interface Appointment {
+﻿// Response DTO from API
+export interface AppointmentResponse {
   id?: number;
-
-  // Jour du rendez-vous (YYYY-MM-DD)
   date: string;
-
-  // Heure de début du rendez-vous (HH:mm)
   time: string;
+  duration?: number;
+  bay: string;
+  clientId?: number;
+  clientFullName?: string;
+  carId?: number;
+  carInfo?: string;
+  serviceType?: string;
+  serviceNote?: string;
+}
 
-  // Durée en minutes (ex. 15/30/45/60)
-  duration: number;
+// Request DTO for creating/updating an appointment
+export interface AppointmentRequest {
+  date: string;
+  time: string;
+  duration?: number;
+  bay: string;
+  clientId: number;
+  carId?: number;
+  serviceType?: string;
+  serviceNote?: string;
+}
 
-  // Pont
-  bay: 'A' | 'B';
-
-  // Lié au client
+// Alias pour rétrocompatibilité - unifié avec AppointmentResponse
+export interface Appointment {
+  id?: number;
+  date: string;
+  time: string;
+  duration?: number;
+  bay: string;
   clientId?: number;
   clientName?: string;
-
-  // Info service (affichage)
+  clientFullName?: string;
+  carId?: number;
+  carInfo?: string;
   serviceType?: string;
+  serviceNote?: string;
 }

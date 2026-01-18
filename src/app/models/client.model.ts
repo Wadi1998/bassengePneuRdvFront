@@ -1,9 +1,21 @@
-﻿export interface Client {
+﻿import { CarResponse } from './car.model';
+
+// Response DTO from API
+export interface ClientResponse {
   id: number;
   firstName: string;
   name: string;
-  phone?: string;
-  vehicle?: string;
-  plate: string; // Champ obligatoire pour la plaque d'immatriculation
-  email?: string; // Champ optionnel pour l'adresse e-mail
+  phone: string;
+  cars?: CarResponse[];
 }
+
+// Request DTO for creating/updating a client
+export interface ClientRequest {
+  firstName: string;
+  name: string;
+  phone: string;
+}
+
+// Alias pour rétrocompatibilité
+export type Client = ClientResponse;
+

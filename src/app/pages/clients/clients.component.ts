@@ -1,13 +1,15 @@
 ﻿import { Component, ElementRef, ViewChild, OnInit, AfterViewInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
-  FormBuilder, FormGroup, ReactiveFormsModule, Validators, FormControl
+  FormBuilder, FormGroup, ReactiveFormsModule, Validators, FormControl, FormArray
 } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
 import { ToastrService } from 'ngx-toastr';
 import { bePhoneLibValidator, parsePhoneBE } from '../../utils/phone-be-lib';
 import { ClientsService } from '../../services/clients.service';
-import { Client } from '../../models/client.model';
+import { CarsService } from '../../services/cars.service';
+import { Client, ClientRequest } from '../../models/client.model';
+import { Car, CarRequest } from '../../models/car.model';
 import { I18nService } from '../../services/i18n.service';
 
 @Component({
@@ -20,6 +22,7 @@ export class ClientsComponent implements OnInit, AfterViewInit {
   private fb = inject(FormBuilder);
   private toastr = inject(ToastrService);
   private api = inject(ClientsService);
+  private carsApi = inject(CarsService);
   public i18n = inject(I18nService);
 
   form: FormGroup;
@@ -28,7 +31,7 @@ export class ClientsComponent implements OnInit, AfterViewInit {
   // 🔎 recherche
   search = new FormControl<string>('', { nonNullable: true });
 
-  // 🎯 focus “Prénom”
+  // 🎯 focus "Prénom"
   @ViewChild('firstNameInput') firstNameInput?: ElementRef<HTMLInputElement>;
 
   // Pagination
@@ -39,7 +42,13 @@ export class ClientsComponent implements OnInit, AfterViewInit {
   // Ajout des propriétés pour la gestion de la popup
   isEditPopupOpen = false;
   editForm: FormGroup;
-  currentClientId: number | null = null; // Correction du type de currentClientId
+  currentClientId: number | null = null;
+
+  // Gestion des voitures du client en édition
+  clientCars: Car[] = [];
+  isCarPopupOpen = false;
+  carForm: FormGroup;
+  editingCarId: number | null = null;
 
   loading = false;
 
@@ -52,26 +61,33 @@ export class ClientsComponent implements OnInit, AfterViewInit {
       firstName: ['', Validators.required],
       name: ['', Validators.required],
       phone: ['', [Validators.required, bePhoneLibValidator()]],
-      vehicle: ['', Validators.required],
-      plate: ['', Validators.required], // Champ obligatoire pour la plaque
-      email: ['', [Validators.email]] // Validation uniquement si le champ n'est pas vide
+      // Premier véhicule (optionnel lors de la création du client)
+      carBrand: [''],
+      carModel: [''],
+      carYear: [''],
+      carPlate: ['']
     });
 
     // Initialisation du formulaire de modification
     this.editForm = this.fb.group({
       firstName: ['', Validators.required],
       name: ['', Validators.required],
-      phone: ['', [Validators.required, bePhoneLibValidator()]],
-      vehicle: ['', Validators.required],
-      plate: ['', Validators.required],
-      email: ['', [Validators.email]]
+      phone: ['', [Validators.required, bePhoneLibValidator()]]
+    });
+
+    // Formulaire pour ajouter/modifier une voiture
+    this.carForm = this.fb.group({
+      brand: ['', Validators.required],
+      model: ['', Validators.required],
+      year: [''],
+      licensePlate: ['']
     });
   }
 
   // ========= Lifecycle =========
   ngOnInit(): void {
     this.search.valueChanges.subscribe(() => {
-      this.page = 1; // On revient à la première page lors d'une nouvelle recherche
+      this.page = 1;
       this.refreshList();
     });
     this.refreshList();
@@ -84,16 +100,45 @@ export class ClientsComponent implements OnInit, AfterViewInit {
   // ========= Data loading =========
   private refreshList(): void {
     this.loading = true;
-    this.api.listPaged(this.page, this.pageSize).subscribe({
+    const searchQuery = this.search.value.trim();
+
+    const request$ = searchQuery
+      ? this.api.listFiltered(searchQuery, this.page, this.pageSize)
+      : this.api.listPaged(this.page, this.pageSize);
+
+    request$.subscribe({
       next: (data) => {
         this.items = [...data.items];
         this.totalClient = data.total;
         this.loading = false;
+
+        // Charger les voitures pour chaque client si elles ne sont pas déjà incluses
+        this.loadCarsForClients();
       },
       error: (err) => {
         console.error(err);
         this.toastr.error('Impossible de charger les clients.', 'Erreur réseau');
         this.loading = false;
+      }
+    });
+  }
+
+  /**
+   * Charge les voitures pour chaque client qui n'a pas encore ses voitures chargées
+   */
+  private loadCarsForClients(): void {
+    this.items.forEach((client, index) => {
+      // Si les voitures ne sont pas déjà chargées
+      if (!client.cars || client.cars.length === 0) {
+        this.carsApi.getByClientId(client.id).subscribe({
+          next: (cars) => {
+            // Mettre à jour le client avec ses voitures
+            this.items[index] = { ...client, cars };
+          },
+          error: () => {
+            // Silencieusement ignorer les erreurs de chargement de voitures
+          }
+        });
       }
     });
   }
@@ -115,12 +160,8 @@ export class ClientsComponent implements OnInit, AfterViewInit {
 
   // ========= Getters / Helpers =========
   get filtered(): Client[] {
-    const q = this.normalize(this.search.value);
-    if (!q) return this.items;
-    const match = (v: unknown) => this.normalize(String(v ?? '')).includes(q);
-    return this.items.filter(c =>
-      match(c.firstName) || match(c.name) || match(this.phoneDisplay(c.phone)) || match(c.vehicle)
-    );
+    // La recherche est maintenant gérée côté serveur
+    return this.items;
   }
 
   /** Affichage humain du téléphone (garde e164 si invalide) */
@@ -139,7 +180,14 @@ export class ClientsComponent implements OnInit, AfterViewInit {
     return i1 + i2;
   }
 
+  /** Affiche les voitures du client */
+  getCarsDisplay(c: Client): string {
+    if (!c.cars || c.cars.length === 0) return '';
+    return c.cars.map(car => `${car.brand} ${car.model}`).join(', ');
+  }
+
   trackById(_: number, c: Client) { return c.id; }
+  trackByCarId(_: number, car: Car) { return car.id; }
 
   focusFirstInput = () => {
     queueMicrotask(() => this.firstNameInput?.nativeElement?.focus());
@@ -149,12 +197,21 @@ export class ClientsComponent implements OnInit, AfterViewInit {
   add(): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
-      this.toastr.error(this.i18n.t('clients.firstNameRequired'), this.i18n.t('clients.addButton'));
+
+      // Afficher le message d'erreur approprié selon le champ invalide
+      if (this.form.get('firstName')?.invalid) {
+        this.toastr.error(this.i18n.t('clients.firstNameRequired'), this.i18n.t('clients.addButton'));
+      } else if (this.form.get('name')?.invalid) {
+        this.toastr.error(this.i18n.t('clients.nameRequired'), this.i18n.t('clients.addButton'));
+      } else if (this.form.get('phone')?.invalid) {
+        this.toastr.error(this.i18n.t('clients.phoneInvalid'), this.i18n.t('clients.addButton'));
+      }
       return;
     }
 
-    const { firstName, name, phone, vehicle, plate } = this.form.value as {
-      firstName: string; name: string; phone: string; vehicle?: string; plate: string;
+    const { firstName, name, phone, carBrand, carModel, carYear, carPlate } = this.form.value as {
+      firstName: string; name: string; phone: string;
+      carBrand?: string; carModel?: string; carYear?: string; carPlate?: string;
     };
     const parsed = parsePhoneBE(phone);
 
@@ -164,19 +221,44 @@ export class ClientsComponent implements OnInit, AfterViewInit {
       return;
     }
 
-    const dto: Omit<Client, 'id'> = {
+    const dto: ClientRequest = {
       firstName: String(firstName).trim(),
       name: String(name).trim(),
-      phone: parsed.e164,
-      vehicle: String(vehicle || '').trim() || undefined,
-      plate: String(plate || '').trim() // Ajout du champ 'plate'
+      phone: parsed.e164!
     };
 
+    this.loading = true;
     this.api.create(dto).subscribe({
       next: (created) => {
-        // on insère en tête pour feedback instantané
-        this.items = [created, ...this.items];
-        this.toastr.success(this.i18n.t('clients.clientCount', { count: 1 }), `${created.firstName} ${created.name}`);
+        // Si une voiture a été renseignée, on l'ajoute
+        const hasCar = carBrand && carModel;
+        if (hasCar) {
+          const carDto: CarRequest = {
+            clientId: created.id,
+            brand: String(carBrand).trim(),
+            model: String(carModel).trim(),
+            year: carYear ? parseInt(carYear, 10) : undefined,
+            licensePlate: carPlate ? String(carPlate).trim() : undefined
+          };
+          this.carsApi.create(carDto).subscribe({
+            next: (car) => {
+              created.cars = [car];
+              this.items = [created, ...this.items];
+              this.toastr.success(this.i18n.t('clients.clientCount', { count: 1 }), `${created.firstName} ${created.name}`);
+              this.loading = false;
+            },
+            error: () => {
+              // Le client a été créé, mais pas la voiture
+              this.items = [created, ...this.items];
+              this.toastr.warning('Client créé mais voiture non ajoutée');
+              this.loading = false;
+            }
+          });
+        } else {
+          this.items = [created, ...this.items];
+          this.toastr.success(this.i18n.t('clients.clientCount', { count: 1 }), `${created.firstName} ${created.name}`);
+          this.loading = false;
+        }
 
         this.form.reset();
         this.form.markAsPristine();
@@ -186,6 +268,7 @@ export class ClientsComponent implements OnInit, AfterViewInit {
       error: (err) => {
         console.error(err);
         this.toastr.error(this.i18n.t('errors.loadAppointments'), this.i18n.t('clients.addButton'));
+        this.loading = false;
       }
     });
   }
@@ -195,44 +278,67 @@ export class ClientsComponent implements OnInit, AfterViewInit {
     const label = c ? `${c.firstName} ${c.name}` : this.i18n.t('clients.removeButton');
     if (!confirm(this.i18n.t('clients.removeButton') + ' ' + label + ' ?')) return;
 
+    this.loading = true;
     this.api.remove(id).subscribe({
       next: () => {
         this.items = this.items.filter(x => x.id !== id);
         this.toastr.info(this.i18n.t('clients.removeButton'));
+        this.loading = false;
       },
       error: (err) => {
         console.error(err);
         this.toastr.error(this.i18n.t('errors.loadAppointments'));
+        this.loading = false;
       }
     });
   }
 
   openEditPopup(client: Client) {
     this.isEditPopupOpen = true;
-    this.currentClientId = client.id; // client.id est de type number
+    this.currentClientId = client.id;
     this.editForm.patchValue({
       firstName: client.firstName,
       name: client.name,
-      phone: client.phone,
-      vehicle: client.vehicle ?? '',
-      plate: client.plate ?? '',
-      email: client.email ?? ''
+      phone: client.phone
+    });
+    // Charger les voitures du client
+    this.loadClientCars(client.id);
+  }
+
+  loadClientCars(clientId: number) {
+    this.carsApi.getByClientId(clientId).subscribe({
+      next: (cars) => {
+        this.clientCars = cars;
+      },
+      error: () => {
+        this.clientCars = [];
+      }
     });
   }
 
   closeEditPopup() {
     this.isEditPopupOpen = false;
     this.currentClientId = null;
+    this.clientCars = [];
   }
 
   updateClient() {
     if (this.editForm.invalid || this.currentClientId === null) {
       this.editForm.markAllAsTouched();
+
+      // Afficher le message d'erreur approprié
+      if (this.editForm.get('firstName')?.invalid) {
+        this.toastr.error(this.i18n.t('clients.firstNameRequired'), this.i18n.t('clients.save'));
+      } else if (this.editForm.get('name')?.invalid) {
+        this.toastr.error(this.i18n.t('clients.nameRequired'), this.i18n.t('clients.save'));
+      } else if (this.editForm.get('phone')?.invalid) {
+        this.toastr.error(this.i18n.t('clients.phoneInvalid'), this.i18n.t('clients.save'));
+      }
       return;
     }
 
-    const { firstName, name, phone, vehicle, plate, email } = this.editForm.value as {
-      firstName: string; name: string; phone: string; vehicle?: string; plate: string; email?: string
+    const { firstName, name, phone } = this.editForm.value as {
+      firstName: string; name: string; phone: string;
     };
 
     const parsed = parsePhoneBE(phone);
@@ -242,25 +348,119 @@ export class ClientsComponent implements OnInit, AfterViewInit {
       return;
     }
 
-    const dto: Omit<Client, 'id'> = {
+    const dto: ClientRequest = {
       firstName: String(firstName).trim(),
       name: String(name).trim(),
-      phone: parsed.e164,
-      vehicle: String(vehicle || '').trim() || undefined,
-      plate: String(plate || '').trim(),
-      email: String(email || '').trim() || undefined
+      phone: parsed.e164!
     };
 
+    this.loading = true;
     this.api.update(this.currentClientId, dto).subscribe({
       next: (updatedClient) => {
+        updatedClient.cars = this.clientCars;
         this.items = this.items.map((client) =>
           client.id === updatedClient.id ? updatedClient : client
         );
         this.toastr.success(this.i18n.t('clients.save'));
         this.closeEditPopup();
+        this.loading = false;
       },
       error: () => {
         this.toastr.error(this.i18n.t('errors.loadAppointments'));
+        this.loading = false;
+      }
+    });
+  }
+
+  // ========= Gestion des voitures =========
+  openCarPopup(car?: Car) {
+    this.isCarPopupOpen = true;
+    if (car) {
+      this.editingCarId = car.id!;
+      this.carForm.patchValue({
+        brand: car.brand,
+        model: car.model,
+        year: car.year || '',
+        licensePlate: car.licensePlate || ''
+      });
+    } else {
+      this.editingCarId = null;
+      this.carForm.reset();
+    }
+  }
+
+  closeCarPopup() {
+    this.isCarPopupOpen = false;
+    this.editingCarId = null;
+    this.carForm.reset();
+  }
+
+  saveCar() {
+    if (this.carForm.invalid || this.currentClientId === null) {
+      this.carForm.markAllAsTouched();
+
+      // Afficher le message d'erreur approprié
+      if (this.carForm.get('brand')?.invalid) {
+        this.toastr.error(this.i18n.t('clients.brandRequired') || 'La marque est obligatoire');
+      } else if (this.carForm.get('model')?.invalid) {
+        this.toastr.error(this.i18n.t('clients.modelRequired') || 'Le modèle est obligatoire');
+      }
+      return;
+    }
+
+    const { brand, model, year, licensePlate } = this.carForm.value;
+
+    if (this.editingCarId) {
+      // Modification
+      const dto: CarRequest = {
+        clientId: this.currentClientId,
+        brand: String(brand).trim(),
+        model: String(model).trim(),
+        year: year ? parseInt(year, 10) : undefined,
+        licensePlate: licensePlate ? String(licensePlate).trim() : undefined
+      };
+      this.carsApi.update(this.editingCarId, dto).subscribe({
+        next: (updatedCar) => {
+          this.clientCars = this.clientCars.map(c => c.id === updatedCar.id ? updatedCar : c);
+          this.toastr.success('Voiture modifiée');
+          this.closeCarPopup();
+        },
+        error: () => {
+          this.toastr.error('Erreur lors de la modification');
+        }
+      });
+    } else {
+      // Création
+      const dto: CarRequest = {
+        clientId: this.currentClientId,
+        brand: String(brand).trim(),
+        model: String(model).trim(),
+        year: year ? parseInt(year, 10) : undefined,
+        licensePlate: licensePlate ? String(licensePlate).trim() : undefined
+      };
+      this.carsApi.create(dto).subscribe({
+        next: (newCar) => {
+          this.clientCars = [...this.clientCars, newCar];
+          this.toastr.success('Voiture ajoutée');
+          this.closeCarPopup();
+        },
+        error: () => {
+          this.toastr.error('Erreur lors de l\'ajout');
+        }
+      });
+    }
+  }
+
+  removeCar(carId: number) {
+    if (!confirm('Supprimer cette voiture ?')) return;
+
+    this.carsApi.remove(carId).subscribe({
+      next: () => {
+        this.clientCars = this.clientCars.filter(c => c.id !== carId);
+        this.toastr.info('Voiture supprimée');
+      },
+      error: () => {
+        this.toastr.error('Erreur lors de la suppression');
       }
     });
   }

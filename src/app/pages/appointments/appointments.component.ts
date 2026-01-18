@@ -5,7 +5,7 @@ import { lastValueFrom } from 'rxjs';
 import { ToastrService } from 'ngx-toastr';
 import { I18nService } from '../../services/i18n.service';
 
-import { Appointment } from '../../models/appointment.model';
+import { Appointment, AppointmentRequest, AppointmentResponse } from '../../models/appointment.model';
 import { Client } from '../../models/client.model';
 import { AppointmentsService } from '../../services/appointments.service';
 import { ClientsService } from '../../services/clients.service';
@@ -176,8 +176,7 @@ export class AppointmentsComponent implements OnInit {
     if (!q) return this.clients;
     return this.clients.filter(c =>
       `${c.firstName ?? ''} ${c.name ?? ''}`.toLowerCase().includes(q) ||
-      (c.phone ?? '').toLowerCase().includes(q) ||
-      (c.vehicle ?? '').toLowerCase().includes(q)
+      (c.phone ?? '').toLowerCase().includes(q)
     );
   }
 
@@ -220,13 +219,12 @@ export class AppointmentsComponent implements OnInit {
       return;
     }
 
-    const a: Appointment = {
+    const a: AppointmentRequest = {
       date: this.date,
       time,
       duration: this.duration,
       bay,
       clientId: Number(this.selectedClient.id),
-      clientName: this.fullName(this.selectedClient),
       serviceType: this.serviceType.trim()
     };
 
@@ -246,6 +244,25 @@ export class AppointmentsComponent implements OnInit {
       this.toastr.warning(this.i18n.t('appointments.toasts.chooseClientBefore'));
     } else {
       this.toastr.warning(this.i18n.t('appointments.toasts.serviceRequired'));
+    }
+  }
+
+  async onDeleteAppointment(appointmentId: number) {
+    const confirmMessage = this.i18n.t('appointments.confirmDelete') || 'Voulez-vous vraiment supprimer ce rendez-vous ?';
+    if (!confirm(confirmMessage)) return;
+
+    try {
+      await lastValueFrom(this.appts.remove(appointmentId));
+      await this.refresh();
+      this.toastr.success(
+        this.i18n.t('appointments.toasts.deleted') || 'Rendez-vous supprimé',
+        this.i18n.t('appointments.toasts.deletedTitle') || 'Suppression'
+      );
+    } catch {
+      this.toastr.error(
+        this.i18n.t('appointments.toasts.deleteError') || 'Impossible de supprimer le rendez-vous',
+        'Erreur'
+      );
     }
   }
 

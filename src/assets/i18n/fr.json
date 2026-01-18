@@ -53,15 +53,19 @@
     "firstnamePlaceholder": "Prénom *",
     "namePlaceholder": "Nom *",
     "phonePlaceholder": "Téléphone (BE) *",
-    "vehiclePlaceholder": "Véhicule (ex: Golf 7) *",
-    "platePlaceholder": "Plaque *",
+    "brandPlaceholder": "Marque",
+    "modelPlaceholder": "Modèle",
+    "yearPlaceholder": "Année",
+    "platePlaceholder": "Plaque",
     "emailPlaceholder": "Adresse e-mail",
-    "searchPlaceholder": "Rechercher (nom, prénom, téléphone, véhicule)",
+    "optionalVehicle": "Véhicule (optionnel)",
+    "searchPlaceholder": "Rechercher (nom, prénom, téléphone)",
     "firstNameRequired": "Le prénom est obligatoire.",
     "nameRequired": "Le nom est obligatoire.",
     "phoneInvalid": "Numéro belge invalide (ex. 0470 12 34 56 ou 02 123 45 67).",
-    "vehicleRequired": "Le véhicule est obligatoire.",
-    "plateRequired": "La plaque d'immatriculation est obligatoire.",
+    "phoneRequired": "Le téléphone est obligatoire.",
+    "brandRequired": "La marque est obligatoire.",
+    "modelRequired": "Le modèle est obligatoire.",
     "addButton": "Ajouter",
     "editButton": "Modifier",
     "removeButton": "Supprimer",
@@ -72,7 +76,11 @@
     "cancel": "Annuler",
     "paginationPrev": "Précédent",
     "paginationNext": "Suivant",
-    "pageOf": "Page {page} / {total}"
+    "pageOf": "Page {page} / {total}",
+    "carsTitle": "Voitures du client",
+    "addCar": "Ajouter une voiture",
+    "editCar": "Modifier la voiture",
+    "noCars": "Aucune voiture enregistrée"
   },
   "actions": {
     "addClientIcon": "👤+"
@@ -89,13 +97,18 @@
     "nextDay": "Jour +1",
     "changeClient": "Changer",
     "slotNote": "Pas de 15 min — durée {duration} min",
+    "deleteAppointment": "Supprimer le rendez-vous",
+    "confirmDelete": "Voulez-vous vraiment supprimer ce rendez-vous ?",
     "toasts": {
       "chooseClientBefore": "Choisis un client avant de réserver.",
       "serviceRequired": "Saisis un type de service avant de réserver.",
       "bothRequired": "Choisis un client et un type de service avant de réserver.",
       "booked": "Réservé à {time} sur pont {bay}",
       "bookedTitle": "Rendez-vous créé",
-      "bookError": "Impossible de créer le rendez-vous."
+      "bookError": "Impossible de créer le rendez-vous.",
+      "deleted": "Rendez-vous supprimé avec succès",
+      "deletedTitle": "Suppression",
+      "deleteError": "Impossible de supprimer le rendez-vous."
     }
   }
 }

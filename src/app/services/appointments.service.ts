@@ -1,31 +1,64 @@
-﻿// services/appointments.service.ts
-import { Injectable, inject } from '@angular/core';
+﻿import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Appointment } from '../models/appointment.model';
+import { AppointmentResponse, AppointmentRequest } from '../models/appointment.model';
 import { environment } from '../../environments/environment';
 
-type Bay = 'A'|'B';
-
+type Bay = 'A' | 'B';
 
 @Injectable({ providedIn: 'root' })
 export class AppointmentsService {
-  // Use environment.apiBase so the backend base URL is configurable per environment
   private readonly base = `${environment.apiBase}/api/appointments`;
-
   private http = inject(HttpClient);
 
-  listByDate(date: string, bay?: Bay): Observable<Appointment[]> {
+  /**
+   * Liste tous les rendez-vous
+   */
+  list(): Observable<AppointmentResponse[]> {
+    return this.http.get<AppointmentResponse[]>(this.base);
+  }
+
+  /**
+   * Récupère un rendez-vous par son ID
+   */
+  getById(id: number): Observable<AppointmentResponse> {
+    return this.http.get<AppointmentResponse>(`${this.base}/${id}`);
+  }
+
+  /**
+   * Liste les rendez-vous d'un jour donné
+   */
+  listByDate(date: string, bay?: Bay): Observable<AppointmentResponse[]> {
     const params = new HttpParams().set('date', date);
     const finalParams = bay ? params.set('bay', bay) : params;
-    return this.http.get<Appointment[]>(`${this.base}/by-day`, { params: finalParams });
+    return this.http.get<AppointmentResponse[]>(`${this.base}/by-day`, { params: finalParams });
   }
 
-  create(payload: Appointment): Observable<Appointment> {
-    return this.http.post<Appointment>(this.base, payload);
+  /**
+   * Liste les rendez-vous d'un client
+   */
+  getByClientId(clientId: number): Observable<AppointmentResponse[]> {
+    return this.http.get<AppointmentResponse[]>(`${this.base}/client/${clientId}`);
   }
 
-  remove(id: number | string): Observable<void> {
+  /**
+   * Crée un nouveau rendez-vous
+   */
+  create(payload: AppointmentRequest): Observable<AppointmentResponse> {
+    return this.http.post<AppointmentResponse>(this.base, payload);
+  }
+
+  /**
+   * Modifie un rendez-vous existant
+   */
+  update(id: number, payload: AppointmentRequest): Observable<AppointmentResponse> {
+    return this.http.put<AppointmentResponse>(`${this.base}/${id}`, payload);
+  }
+
+  /**
+   * Supprime un rendez-vous
+   */
+  remove(id: number): Observable<void> {
     return this.http.delete<void>(`${this.base}/${id}`);
   }
 }

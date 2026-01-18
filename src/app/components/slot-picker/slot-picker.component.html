@@ -1,24 +1,23 @@
 ﻿<!-- Liste scrollable de créneaux -->
 <div class="h-[560px] overflow-auto pr-1 space-y-2">
-  <button
+  <div
     *ngFor="let s of slots; trackBy: trackByTime"
-    type="button"
-    (click)="onClick(s.time, s.state)"
     class="w-full text-left rounded-xl border px-3 py-3 transition
            flex items-center gap-3
            border-white/10
-           bg-white/5
-           hover:bg-white/10"
+           bg-white/5"
     [ngClass]="{
+      'hover:bg-white/10 cursor-pointer': s.state === 'free',
       'ring-1 ring-emerald-400/30': s.state === 'free' && canBook,
       'ring-1 ring-rose-400/30': s.state === 'busy',
       'ring-1 ring-amber-400/30': (s.state === 'free' && !canBook) || s.state === 'indispo',
-      'opacity-60 cursor-not-allowed': s.state !== 'free'
+      'opacity-60': s.state === 'past'
     }"
     [title]="(s.state === 'free' && !canBook)
               ? (needService && needClient ? i18n.t('slot.chooseClientAndService')
                  : (needService ? i18n.t('slot.chooseService') : i18n.t('slot.chooseClient')))
               : (s.note || '')"
+    (click)="onClick(s.time, s.state)"
   >
     <!-- Heure -->
     <span class="w-16 shrink-0 font-mono tracking-tight text-sm opacity-90">
@@ -45,9 +44,25 @@
       </div>
     </div>
 
+    <!-- Bouton supprimer pour les créneaux occupés -->
+    <button
+      *ngIf="s.state === 'busy' && s.appointmentId"
+      type="button"
+      (click)="onDelete($event, s.appointmentId)"
+      class="shrink-0 p-2 rounded-lg bg-rose-500/20 border border-rose-500/40 text-rose-300 hover:bg-rose-500/30 hover:text-rose-200 transition"
+      [title]="i18n.t('appointments.deleteAppointment') || 'Supprimer le rendez-vous'"
+    >
+      <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M3 6h18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M10 11v6M14 11v6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+    </button>
+
     <!-- Tag à droite -->
     <span
-      class="text-xs px-2.5 py-1 rounded-full border"
+      class="text-xs px-2.5 py-1 rounded-full border shrink-0"
       [ngClass]="{
         'border-emerald-400/40 bg-emerald-400/10 text-emerald-300': s.state === 'free' && canBook,
         'border-rose-400/40 bg-rose-400/10 text-rose-300': s.state === 'busy',
@@ -66,5 +81,5 @@
         <span *ngSwitchCase="'past'">{{ i18n.t('common.past') }}</span>
       </ng-container>
     </span>
-  </button>
+  </div>
 </div>

@@ -52,7 +52,7 @@
               <div class="min-w-0">
                 <div class="font-medium truncate">{{ c.firstName }} {{ c.name }}</div>
                 <div class="text-xs text-slate-300 truncate">
-                  {{ c.phone }} <span *ngIf="c.vehicle">• {{ c.vehicle }}</span>
+                  {{ c.phone }}
                 </div>
               </div>
             </button>
@@ -128,7 +128,6 @@
         <div class="font-semibold truncate">{{ fullName(selectedClient) }}</div>
         <div class="text-sm text-slate-300 truncate">
           <a class="hover:underline" [href]="'tel:' + selectedClient.phone">{{ selectedClient.phone }}</a>
-          <span *ngIf="selectedClient.vehicle"> • {{ selectedClient.vehicle }}</span>
         </div>
       </div>
       <button class="ml-auto h-9 px-3 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 text-sm" (click)="clearClient()">{{ i18n.t('appointments.changeClient') }}</button>
@@ -155,6 +154,7 @@
           [needClient]="!clientValid"
           (pick)="onPickA($event)"
           (blocked)="onBlocked($event)"
+          (deleteAppointment)="onDeleteAppointment($event)"
         ></app-slot-picker>
       </ng-container>
     </div>
@@ -177,6 +177,7 @@
           [needClient]="!clientValid"
           (pick)="onPickB($event)"
           (blocked)="onBlocked($event)"
+          (deleteAppointment)="onDeleteAppointment($event)"
         ></app-slot-picker>
       </ng-container>
     </div>

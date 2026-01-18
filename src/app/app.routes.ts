@@ -1,12 +1,24 @@
 ﻿import { Routes } from '@angular/router';
+import { inject } from '@angular/core';
+import { Router } from '@angular/router';
 import { DashboardComponent } from './pages/dashboard/dashboard.component';
 import { ClientsComponent } from './pages/clients/clients.component';
 import { AppointmentsComponent } from './pages/appointments/appointments.component';
 import { LoginComponent } from './pages/login/login.component';
 import { loginGuard } from './pages/login/login.guard';
 
+// Guard pour la redirection dynamique à la racine
+const rootRedirectGuard = () => {
+  const router = inject(Router);
+  const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+  if (isLoggedIn) {
+    return router.parseUrl('/dashboard');
+  }
+  return router.parseUrl('/login');
+};
+
 export const routes: Routes = [
-  { path: '', pathMatch: 'full', redirectTo: 'login' },
+  { path: '', pathMatch: 'full', canActivate: [rootRedirectGuard], component: LoginComponent },
   { path: 'login', component: LoginComponent, title: 'Connexion' },
   { path: 'dashboard', component: DashboardComponent, title: 'Accueil', canActivate: [loginGuard] },
   { path: 'clients', component: ClientsComponent, title: 'Clients', canActivate: [loginGuard] },

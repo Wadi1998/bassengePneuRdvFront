@@ -20,6 +20,7 @@ interface SlotVM {
   clientName?: string;
   serviceType?: string;
   note?: string;
+  appointmentId?: number;    // ID du rendez-vous pour la suppression
 }
 
 @Component({
@@ -43,6 +44,7 @@ export class SlotPickerComponent implements OnChanges {
   // ---------- Outputs ----------
   @Output() pick = new EventEmitter<string>();                         // émet l'heure "HH:mm"
   @Output() blocked = new EventEmitter<'service' | 'client' | 'both'>();
+  @Output() deleteAppointment = new EventEmitter<number>();            // émet l'ID du rdv à supprimer
 
   // ---------- Etat local ----------
   slots: SlotVM[] = [];
@@ -110,8 +112,9 @@ export class SlotPickerComponent implements OnChanges {
           out.push({
             time,
             state: 'busy',
-            clientName: overlapAppt.clientName,
-            serviceType: overlapAppt.serviceType
+            clientName: overlapAppt.clientFullName || overlapAppt.clientName,
+            serviceType: overlapAppt.serviceType,
+            appointmentId: overlapAppt.id
           });
         } else if (!windowFree) {
           out.push({
@@ -188,5 +191,12 @@ export class SlotPickerComponent implements OnChanges {
     }
 
     this.pick.emit(time);
+  }
+
+  onDelete(event: Event, appointmentId: number | undefined) {
+    event.stopPropagation(); // Empêcher le clic sur le bouton parent
+    if (appointmentId) {
+      this.deleteAppointment.emit(appointmentId);
+    }
   }
 }

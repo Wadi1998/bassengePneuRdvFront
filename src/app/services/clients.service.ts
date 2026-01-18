@@ -1,27 +1,40 @@
 ﻿import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Client } from '../models/client.model';
+import { Client, ClientRequest, ClientResponse } from '../models/client.model';
 import { environment } from '../../environments/environment';
 import { Observable } from 'rxjs';
+
+// Interface pour la réponse paginée
+interface PageResponseClientResponse {
+  items: ClientResponse[];
+  total: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
+}
 
 @Injectable({ providedIn: 'root' })
 export class ClientsService {
   private base = `${environment.apiBase}/api/clients`;
   private http = inject(HttpClient);
 
-  list(): Observable<Client[]> {
-    return this.http.get<Client[]>(this.base);
+  list(): Observable<ClientResponse[]> {
+    return this.http.get<ClientResponse[]>(this.base);
   }
 
-  create(dto: Omit<Client, 'id'>): Observable<Client> {
-    return this.http.post<Client>(this.base, dto);
+  getById(id: number): Observable<ClientResponse> {
+    return this.http.get<ClientResponse>(`${this.base}/${id}`);
   }
 
-  update(id: Client['id'], dto: Partial<Client>): Observable<Client> {
-    return this.http.patch<Client>(`${this.base}/${id}`, dto);
+  create(dto: ClientRequest): Observable<ClientResponse> {
+    return this.http.post<ClientResponse>(this.base, dto);
   }
 
-  remove(id: Client['id']): Observable<void> {
+  update(id: number, dto: ClientRequest): Observable<ClientResponse> {
+    return this.http.put<ClientResponse>(`${this.base}/${id}`, dto);
+  }
+
+  remove(id: number): Observable<void> {
     return this.http.delete<void>(`${this.base}/${id}`);
   }
 
@@ -30,19 +43,19 @@ export class ClientsService {
    * @param page Numéro de la page (commence à 1)
    * @param pageSize Nombre d'éléments par page
    */
-  listPaged(page: number, pageSize: number): Observable<{ items: Client[]; total: number }> {
+  listPaged(page: number, pageSize: number): Observable<PageResponseClientResponse> {
     const params = { page: page.toString(), pageSize: pageSize.toString() };
-    return this.http.get<{ items: Client[]; total: number }>(this.base, { params });
+    return this.http.get<PageResponseClientResponse>(this.base, { params });
   }
 
   /**
-   * Récupère les clients filtrés et paginés
+   * Recherche des clients par nom ou téléphone
    * @param query Termes de recherche pour filtrer les clients
    * @param page Numéro de la page (commence à 1)
    * @param pageSize Nombre d'éléments par page
    */
-  listFiltered(query: string, page: number, pageSize: number): Observable<{ items: Client[]; total: number }> {
+  listFiltered(query: string, page: number, pageSize: number): Observable<PageResponseClientResponse> {
     const params = { query, page: page.toString(), pageSize: pageSize.toString() };
-    return this.http.get<{ items: Client[]; total: number }>(`${this.base}/search`, { params });
+    return this.http.get<PageResponseClientResponse>(`${this.base}/search`, { params });
   }
 }

@@ -93,9 +93,11 @@ export class DashboardComponent implements OnInit {
     const map: Record<Bay, Interval[]> = { A: [], B: [] };
     for (const a of this.appointments) {
       if (!a.time || !a.bay || !a.duration) continue;
+      const bay = a.bay as Bay;
+      if (bay !== 'A' && bay !== 'B') continue;
       const startMin = this.hhmmToMin(a.time);
       const endMin = startMin + a.duration;
-      map[a.bay].push({ startMin, endMin, appt: a });
+      map[bay].push({ startMin, endMin, appt: a });
     }
     // trier pour recherche plus simple
     map.A.sort((x, y) => x.startMin - y.startMin);
