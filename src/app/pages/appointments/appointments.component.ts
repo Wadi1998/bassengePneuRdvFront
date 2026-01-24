@@ -1,38 +1,138 @@
-﻿﻿import { Component, OnInit, ChangeDetectorRef, ViewChildren, QueryList, inject } from '@angular/core';
+﻿import { Component, OnInit, ChangeDetectorRef, ViewChildren, QueryList, inject, OnDestroy } from '@angular/core';
 import { CommonModule, NgFor, NgIf, UpperCasePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { lastValueFrom } from 'rxjs';
+import { Subject, takeUntil, lastValueFrom } from 'rxjs';
 import { ToastrService } from 'ngx-toastr';
-import { I18nService } from '../../services/i18n.service';
 
-import { Appointment, AppointmentRequest, AppointmentResponse } from '../../models/appointment.model';
+import { I18nService } from '../../services/i18n.service';
+import { Appointment, AppointmentRequest } from '../../models/appointment.model';
 import { Client } from '../../models/client.model';
 import { CarResponse } from '../../models/car.model';
 import { AppointmentsService } from '../../services/appointments.service';
 import { ClientsService } from '../../services/clients.service';
 import { CarsService } from '../../services/cars.service';
 import { SlotPickerComponent } from '../../components/slot-picker/slot-picker.component';
+import { ConfirmDialogComponent, ConfirmDialogData } from '../../components/confirm-dialog/confirm-dialog.component';
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Composant
+// ─────────────────────────────────────────────────────────────────────────────
 @Component({
   standalone: true,
   selector: 'app-appointments',
   templateUrl: './appointments.component.html',
-  imports: [CommonModule, FormsModule, NgIf, NgFor, UpperCasePipe, SlotPickerComponent]
+  imports: [
+    CommonModule,
+    FormsModule,
+    NgIf,
+    NgFor,
+    UpperCasePipe,
+    SlotPickerComponent,
+    ConfirmDialogComponent
+  ]
 })
-export class AppointmentsComponent implements OnInit {
-  // On initialise dans ngOnInit pour garantir qu'on utilise la date locale
-  date: string = '';
+export class AppointmentsComponent implements OnInit, OnDestroy {
+  // ═══════════════════════════════════════════════════════════════════════════
+  // Injections
+  // ═══════════════════════════════════════════════════════════════════════════
+  private readonly appts = inject(AppointmentsService);
+  private readonly clientsApi = inject(ClientsService);
+  private readonly carsApi = inject(CarsService);
+  private readonly toastr = inject(ToastrService);
+  private readonly cdr = inject(ChangeDetectorRef);
+  public readonly i18n = inject(I18nService);
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // État du composant
+  // ═══════════════════════════════════════════════════════════════════════════
+  private readonly destroy$ = new Subject<void>();
+
+  // Date et durée
+  date = '';
   duration = 30;
-  durations = [15, 30, 45, 60];
-  // force (dé)montage des slot-pickers via *ngIf
+  readonly durations = [15, 30, 45, 60];
   showSlots = true;
 
-  // Getter pour le template - convertit la date string en Date object
+  // Rendez-vous
+  items: Appointment[] = [];
+
+  // Clients
+  clients: Client[] = [];
+  private clientsById = new Map<number, Client>();
+  selectedClient: Client | null = null;
+  showClientPicker = false;
+  clientSearch = '';
+
+  // Voitures
+  clientCars: CarResponse[] = [];
+  selectedCar: CarResponse | null = null;
+  showCarPicker = false;
+  isLoadingCars = false;
+
+  // Service
+  serviceType = '';
+  showServiceError = false;
+
+  // États UI
+  isLoading = false;
+
+  // Modal de confirmation
+  isConfirmOpen = false;
+  confirmData: ConfirmDialogData | null = null;
+  private pendingDeleteId: number | null = null;
+
+  // Références aux slot-pickers
+  @ViewChildren(SlotPickerComponent) private pickers!: QueryList<SlotPickerComponent>;
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // Getters
+  // ═══════════════════════════════════════════════════════════════════════════
   get dateObj(): Date {
     return this.parseDate(this.date);
   }
 
-  // --- helpers date locale (évite toISOString/UTC) ---
+  get filteredClients(): Client[] {
+    const q = (this.clientSearch || '').toLowerCase().trim();
+    if (!q) return this.clients;
+    return this.clients.filter(c =>
+      `${c.firstName ?? ''} ${c.name ?? ''}`.toLowerCase().includes(q) ||
+      (c.phone ?? '').toLowerCase().includes(q)
+    );
+  }
+
+  get clientValid(): boolean {
+    return !!this.selectedClient;
+  }
+
+  get carValid(): boolean {
+    return !!this.selectedCar || this.clientCars.length === 0;
+  }
+
+  get serviceValid(): boolean {
+    return !!this.serviceType?.trim();
+  }
+
+  get canBook(): boolean {
+    return this.clientValid && this.carValid && this.serviceValid && !this.isLoading;
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // Lifecycle
+  // ═══════════════════════════════════════════════════════════════════════════
+  async ngOnInit(): Promise<void> {
+    this.date = this.formatDate(new Date());
+    await this.refresh();
+    await this.refreshClients();
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // Helpers de date
+  // ═══════════════════════════════════════════════════════════════════════════
   private pad(n: number): string {
     return n < 10 ? `0${n}` : `${n}`;
   }
@@ -43,69 +143,22 @@ export class AppointmentsComponent implements OnInit {
 
   private parseDate(s: string): Date {
     const [y, m, day] = (s || '').split('-').map(Number);
-    // new Date(year, monthIndex, day) crée une date en heure locale
     return new Date(y, (m || 1) - 1, day || 1);
   }
 
-  items: Appointment[] = [];
-
-  clients: Client[] = [];
-  private clientsById = new Map<number, Client>();
-  selectedClient: Client | null = null;
-  showClientPicker = false;
-  clientSearch = '';
-
-  // Gestion des voitures du client
-  clientCars: CarResponse[] = [];
-  selectedCar: CarResponse | null = null;
-  showCarPicker = false;
-  isLoadingCars = false;
-
-  serviceType = '';
-  showServiceError = false;
-
-  isLoading = false;
-
-  // 🔎 Référence sur les 2 enfants pour forcer un rebuild manuel
-  @ViewChildren(SlotPickerComponent) private pickers!: QueryList<SlotPickerComponent>;
-
-  private appts = inject(AppointmentsService);
-  private clientsApi = inject(ClientsService);
-  private carsApi = inject(CarsService);
-  private toastr = inject(ToastrService);
-  public i18n = inject(I18nService);
-  private cdr = inject(ChangeDetectorRef);
-
-  async ngOnInit(): Promise<void> {
-    // initialiser la date en heure locale pour éviter le décalage UTC
-    this.date = this.formatDate(new Date());
-
-    await this.refresh();
-    await this.refreshClients();
-  }
-
-  /** 🔧 Rebuild impératif des 2 SlotPicker */
-  private rebuildChildren(): void {
-    // On attend que l’UI intègre la nouvelle ref, puis on force
-    queueMicrotask(() => {
-      this.pickers?.forEach(p => p.rebuild());
-    });
-  }
-
+  // ═══════════════════════════════════════════════════════════════════════════
+  // Chargement des données
+  // ═══════════════════════════════════════════════════════════════════════════
   async refresh(): Promise<void> {
     this.isLoading = true;
     try {
       const items = await lastValueFrom(this.appts.listByDate(this.date));
-
-      // tri + nouvelle référence
       this.items = [...(items ?? [])].sort((a, b) => a.time.localeCompare(b.time));
-
       this.cdr.markForCheck();
       this.rebuildChildren();
-
     } catch (err) {
       console.error('Erreur lors du refresh', err);
-      this.toastr.error(this.i18n.t('errors.loadAppointments'), 'Erreur réseau');
+      this.toastr.error(this.i18n.t('errors.loadAppointments'));
       this.items = [];
       this.cdr.markForCheck();
       this.rebuildChildren();
@@ -125,51 +178,41 @@ export class AppointmentsComponent implements OnInit {
       data.items.forEach(client => this.clientsById.set(client.id, client));
     } catch (err) {
       console.error('Erreur lors du chargement des clients', err);
-      this.toastr.error(this.i18n.t('errors.loadAppointments'), 'Erreur réseau');
+      this.toastr.error(this.i18n.t('errors.loadClients'));
       this.clients = [];
       this.clientsById.clear();
     }
   }
 
+  private rebuildChildren(): void {
+    queueMicrotask(() => {
+      this.pickers?.forEach(p => p.rebuild());
+    });
+  }
 
-  // === Navigation jours ===
-  async prevDay() {
+  // ═══════════════════════════════════════════════════════════════════════════
+  // Navigation
+  // ═══════════════════════════════════════════════════════════════════════════
+  async prevDay(): Promise<void> {
     const d = this.parseDate(this.date);
     d.setDate(d.getDate() - 1);
     this.date = this.formatDate(d);
-
-    this.items = [];            // vide → feedback immédiat
-    this.cdr.detectChanges();
-    this.rebuildChildren();
-
-    this.isLoading = true;
-    try {
-      await this.refresh();
-    } finally {
-      this.isLoading = false;
-    }
+    await this.handleDateChange();
   }
 
-  async nextDay() {
+  async nextDay(): Promise<void> {
     const d = this.parseDate(this.date);
     d.setDate(d.getDate() + 1);
     this.date = this.formatDate(d);
-
-    this.items = [];
-    this.cdr.detectChanges();
-    this.rebuildChildren();
-
-    this.isLoading = true;
-    try {
-      await this.refresh();
-    } finally {
-      this.isLoading = false;
-    }
+    await this.handleDateChange();
   }
 
-  async setDate(newDate: string) {
+  async setDate(newDate: string): Promise<void> {
     this.date = newDate;
+    await this.handleDateChange();
+  }
 
+  private async handleDateChange(): Promise<void> {
     this.items = [];
     this.cdr.detectChanges();
     this.rebuildChildren();
@@ -182,40 +225,30 @@ export class AppointmentsComponent implements OnInit {
     }
   }
 
-  setDuration(d: number) {
+  setDuration(d: number): void {
     this.duration = d;
-    // Si tu veux que changer la durée rerende aussi:
     this.rebuildChildren();
   }
 
-  get filteredClients(): Client[] {
-    const q = (this.clientSearch || '').toLowerCase().trim();
-    if (!q) return this.clients;
-    return this.clients.filter(c =>
-      `${c.firstName ?? ''} ${c.name ?? ''}`.toLowerCase().includes(q) ||
-      (c.phone ?? '').toLowerCase().includes(q)
-    );
-  }
-
-  async pickClient(c: Client) {
+  // ═══════════════════════════════════════════════════════════════════════════
+  // Gestion des clients
+  // ═══════════════════════════════════════════════════════════════════════════
+  async pickClient(c: Client): Promise<void> {
     this.selectedClient = c;
     this.showClientPicker = false;
     this.selectedCar = null;
     this.clientCars = [];
 
-    // Charger les voitures du client
     await this.loadClientCars(c.id);
 
-    // Si une seule voiture, la sélectionner automatiquement
     if (this.clientCars.length === 1) {
       this.selectedCar = this.clientCars[0];
     } else if (this.clientCars.length > 1) {
-      // Ouvrir le picker de voiture si plusieurs voitures
       this.showCarPicker = true;
     }
   }
 
-  async loadClientCars(clientId: number) {
+  async loadClientCars(clientId: number): Promise<void> {
     this.isLoadingCars = true;
     try {
       this.clientCars = await lastValueFrom(this.carsApi.getByClientId(clientId));
@@ -228,26 +261,33 @@ export class AppointmentsComponent implements OnInit {
     }
   }
 
-  pickCar(car: CarResponse) {
+  pickCar(car: CarResponse): void {
     this.selectedCar = car;
     this.showCarPicker = false;
   }
 
-  clearCar() {
+  clearCar(): void {
     this.selectedCar = null;
   }
 
+  clearClient(): void {
+    this.selectedClient = null;
+    this.selectedCar = null;
+    this.clientCars = [];
+  }
+
+  onClientSearchChange(): void {
+    this.refreshClients();
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // Helpers d'affichage
+  // ═══════════════════════════════════════════════════════════════════════════
   formatCarInfo(car: CarResponse | null): string {
     if (!car) return '';
     const parts = [car.brand, car.model];
     if (car.licensePlate) parts.push(`(${car.licensePlate})`);
     return parts.filter(Boolean).join(' ');
-  }
-
-  clearClient() {
-    this.selectedClient = null;
-    this.selectedCar = null;
-    this.clientCars = [];
   }
 
   fullName(c: Client | null): string {
@@ -262,28 +302,30 @@ export class AppointmentsComponent implements OnInit {
     return `${f.charAt(0)}${n.charAt(0)}`.toUpperCase();
   }
 
-  get clientValid(): boolean { return !!this.selectedClient; }
-  get carValid(): boolean { return !!this.selectedCar || this.clientCars.length === 0; }
-  get serviceValid(): boolean { return !!this.serviceType?.trim(); }
-  get canBook(): boolean { return this.clientValid && this.carValid && this.serviceValid && !this.isLoading; }
+  // ═══════════════════════════════════════════════════════════════════════════
+  // Création de rendez-vous
+  // ═══════════════════════════════════════════════════════════════════════════
+  async onPickA(time: string): Promise<void> {
+    await this.createFor('A', time);
+  }
 
-  async onPickA(time: string) { await this.createFor('A', time); }
-  async onPickB(time: string) { await this.createFor('B', time); }
+  async onPickB(time: string): Promise<void> {
+    await this.createFor('B', time);
+  }
 
-  private async createFor(bay: 'A' | 'B', time: string) {
-    // Bloquer si déjà en cours de chargement
-    if (this.isLoading) {
-      return;
-    }
+  private async createFor(bay: 'A' | 'B', time: string): Promise<void> {
+    if (this.isLoading) return;
 
     if (!this.selectedClient) {
       this.toastr.warning(this.i18n.t('appointments.toasts.chooseClientBefore'));
       return;
     }
+
     if (this.clientCars.length > 0 && !this.selectedCar) {
-      this.toastr.warning(this.i18n.t('appointments.toasts.chooseCarBefore') || 'Veuillez sélectionner une voiture');
+      this.toastr.warning(this.i18n.t('appointments.toasts.chooseCarBefore'));
       return;
     }
+
     if (!this.serviceValid) {
       this.showServiceError = true;
       this.toastr.warning(this.i18n.t('appointments.toasts.serviceRequired'));
@@ -292,7 +334,7 @@ export class AppointmentsComponent implements OnInit {
 
     this.isLoading = true;
 
-    const a: AppointmentRequest = {
+    const request: AppointmentRequest = {
       date: this.date,
       time,
       duration: this.duration,
@@ -303,17 +345,20 @@ export class AppointmentsComponent implements OnInit {
     };
 
     try {
-      await lastValueFrom(this.appts.create(a));
+      await lastValueFrom(this.appts.create(request));
       await this.refresh();
-      this.toastr.success(this.i18n.t('appointments.toasts.booked', { time, bay }), this.i18n.t('appointments.toasts.bookedTitle'));
+      this.toastr.success(
+        this.i18n.t('appointments.toasts.booked', { time, bay }),
+        this.i18n.t('appointments.toasts.bookedTitle')
+      );
     } catch {
-      this.toastr.error(this.i18n.t('appointments.toasts.bookError'), 'Erreur réseau');
+      this.toastr.error(this.i18n.t('appointments.toasts.bookError'));
       this.isLoading = false;
       this.cdr.markForCheck();
     }
   }
 
-  onBlocked(reason: 'service' | 'client' | 'both') {
+  onBlocked(reason: 'service' | 'client' | 'both'): void {
     if (reason === 'both') {
       this.toastr.warning(this.i18n.t('appointments.toasts.bothRequired'));
     } else if (reason === 'client') {
@@ -323,32 +368,48 @@ export class AppointmentsComponent implements OnInit {
     }
   }
 
-  async onDeleteAppointment(appointmentId: number) {
+  // ═══════════════════════════════════════════════════════════════════════════
+  // Suppression de rendez-vous (avec modal custom)
+  // ═══════════════════════════════════════════════════════════════════════════
+  onDeleteAppointment(appointmentId: number): void {
     if (this.isLoading) return;
 
-    const confirmMessage = this.i18n.t('appointments.confirmDelete') || 'Voulez-vous vraiment supprimer ce rendez-vous ?';
-    if (!confirm(confirmMessage)) return;
+    this.pendingDeleteId = appointmentId;
+    this.confirmData = {
+      title: this.i18n.t('appointments.deleteAppointment'),
+      message: this.i18n.t('appointments.confirmDelete'),
+      confirmText: this.i18n.t('clients.removeButton'),
+      cancelText: this.i18n.t('clients.cancel'),
+      type: 'danger'
+    };
+    this.isConfirmOpen = true;
+  }
+
+  async onConfirmDelete(): Promise<void> {
+    this.isConfirmOpen = false;
+
+    if (!this.pendingDeleteId) return;
 
     this.isLoading = true;
 
     try {
-      await lastValueFrom(this.appts.remove(appointmentId));
+      await lastValueFrom(this.appts.remove(this.pendingDeleteId));
       await this.refresh();
       this.toastr.success(
-        this.i18n.t('appointments.toasts.deleted') || 'Rendez-vous supprimé',
-        this.i18n.t('appointments.toasts.deletedTitle') || 'Suppression'
+        this.i18n.t('appointments.toasts.deleted'),
+        this.i18n.t('appointments.toasts.deletedTitle')
       );
     } catch {
-      this.toastr.error(
-        this.i18n.t('appointments.toasts.deleteError') || 'Impossible de supprimer le rendez-vous',
-        'Erreur'
-      );
+      this.toastr.error(this.i18n.t('appointments.toasts.deleteError'));
       this.isLoading = false;
       this.cdr.markForCheck();
+    } finally {
+      this.pendingDeleteId = null;
     }
   }
 
-  onClientSearchChange(): void {
-    this.refreshClients();
+  onCancelDelete(): void {
+    this.isConfirmOpen = false;
+    this.pendingDeleteId = null;
   }
 }

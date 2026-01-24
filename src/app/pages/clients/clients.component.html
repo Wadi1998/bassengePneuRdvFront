@@ -74,7 +74,7 @@
 
       <!-- Séparateur pour véhicule optionnel -->
       <div class="md:col-span-12">
-        <p class="text-sm text-slate-400 border-t border-white/10 pt-4 mt-2">{{ i18n.t('clients.optionalVehicle') || 'Véhicule (optionnel)' }}</p>
+        <p class="text-sm text-slate-400 border-t border-white/10 pt-4 mt-2">{{ i18n.t('clients.optionalVehicle') }}</p>
       </div>
 
       <!-- Marque -->
@@ -87,7 +87,7 @@
               <path d="M5 19a1 1 0 1 0 0-2 1 1 0 0 0 0 2zM19 19a1 1 0 1 0 0-2 1 1 0 0 0 0 2z" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
           </span>
-          <input formControlName="carBrand" placeholder="{{ i18n.t('clients.brandPlaceholder') || 'Marque' }}" class="field-input" />
+          <input formControlName="carBrand" placeholder="{{ i18n.t('clients.brandPlaceholder') }}" class="field-input" />
         </div>
       </div>
 
@@ -102,7 +102,7 @@
               <circle cx="17" cy="18" r="2" stroke="currentColor" stroke-width="1.3"/>
             </svg>
           </span>
-          <input formControlName="carModel" placeholder="{{ i18n.t('clients.modelPlaceholder') || 'Modèle' }}" class="field-input" />
+          <input formControlName="carModel" placeholder="{{ i18n.t('clients.modelPlaceholder') }}" class="field-input" />
         </div>
       </div>
 
@@ -116,7 +116,7 @@
               <path d="M16 2v4M8 2v4M3 10h18" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
             </svg>
           </span>
-          <input formControlName="carYear" type="number" placeholder="{{ i18n.t('clients.yearPlaceholder') || 'Année' }}" class="field-input" />
+          <input formControlName="carYear" type="number" placeholder="{{ i18n.t('clients.yearPlaceholder') }}" class="field-input" />
         </div>
       </div>
 
@@ -130,7 +130,7 @@
               <path d="M7 12h10" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
             </svg>
           </span>
-          <input formControlName="carPlate" placeholder="{{ i18n.t('clients.platePlaceholder') || 'Plaque' }}" class="field-input" />
+          <input formControlName="carPlate" placeholder="{{ i18n.t('clients.platePlaceholder') }}" class="field-input" />
         </div>
       </div>
 
@@ -157,7 +157,7 @@
     </span>
     <input
       [formControl]="search"
-      placeholder="{{ i18n.t('clients.searchPlaceholder') || 'Rechercher (nom, prénom, téléphone)' }}"
+      placeholder="{{ i18n.t('clients.searchPlaceholder') }}"
       class="field-input-ghost"
     />
   </div>
@@ -219,7 +219,7 @@
 
       <!-- Message si pas de voiture -->
       <div *ngIf="!c.cars || c.cars.length === 0" class="mt-2 ml-13 pl-10">
-        <span class="text-xs text-slate-500 italic">{{ i18n.t('clients.noCars') || 'Aucune voiture' }}</span>
+        <span class="text-xs text-slate-500 italic">{{ i18n.t('clients.noCars') }}</span>
       </div>
     </div>
   </div>
@@ -234,7 +234,7 @@
       <div class="card-dark p-6 rounded-2xl shadow-lg">
         <div class="flex items-start justify-between gap-4 mb-4">
           <h3 class="text-lg font-semibold">{{ i18n.t('clients.editButton') }}</h3>
-          <button type="button" (click)="closeEditPopup()" class="btn-secondary" aria-label="Fermer">
+          <button type="button" (click)="closeEditPopup()" class="btn-secondary" [attr.aria-label]="i18n.t('common.close')">
             <!-- close icon -->
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
               <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
@@ -267,14 +267,14 @@
         <!-- Section voitures -->
         <div class="mt-6 border-t border-white/10 pt-4">
           <div class="flex items-center justify-between mb-4">
-            <h4 class="text-md font-semibold text-amber-400">🚗 {{ i18n.t('clients.carsTitle') || 'Voitures du client' }}</h4>
+            <h4 class="text-md font-semibold text-amber-400">🚗 {{ i18n.t('clients.carsTitle') }}</h4>
             <button type="button" class="btn-cta text-sm" (click)="openCarPopup()">
-              + {{ i18n.t('clients.addCar') || 'Ajouter une voiture' }}
+              + {{ i18n.t('clients.addCar') }}
             </button>
           </div>
 
           <div *ngIf="clientCars.length === 0" class="text-sm text-slate-400 py-4 text-center">
-            {{ i18n.t('clients.noCars') || 'Aucune voiture enregistrée' }}
+            {{ i18n.t('clients.noCars') }}
           </div>
 
           <div *ngIf="clientCars.length > 0" class="space-y-2">
@@ -315,9 +315,9 @@
       <div class="card-dark p-6 rounded-2xl shadow-lg">
         <div class="flex items-start justify-between gap-4 mb-4">
           <h3 class="text-lg font-semibold">
-            {{ editingCarId ? (i18n.t('clients.editCar') || 'Modifier la voiture') : (i18n.t('clients.addCar') || 'Ajouter une voiture') }}
+            {{ editingCarId ? i18n.t('clients.editCar') : i18n.t('clients.addCar') }}
           </h3>
-          <button type="button" (click)="closeCarPopup()" class="btn-secondary" aria-label="Fermer">
+          <button type="button" (click)="closeCarPopup()" class="btn-secondary" [attr.aria-label]="i18n.t('common.close')">
             <!-- close icon -->
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
               <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
@@ -327,28 +327,28 @@
 
         <form [formGroup]="carForm" (ngSubmit)="saveCar()" class="space-y-4">
           <div>
-            <label class="block text-sm font-medium text-slate-300 mb-1">{{ i18n.t('clients.brandPlaceholder') || 'Marque' }} *</label>
+            <label class="block text-sm font-medium text-slate-300 mb-1">{{ i18n.t('clients.brandPlaceholder') }} *</label>
             <input formControlName="brand" class="field-input-compact" />
             <div class="text-xs text-red-400 mt-1" *ngIf="carForm.get('brand')?.touched && carForm.get('brand')?.invalid">
-              Marque requise
+              {{ i18n.t('clients.brandRequired') }}
             </div>
           </div>
 
           <div>
-            <label class="block text-sm font-medium text-slate-300 mb-1">{{ i18n.t('clients.modelPlaceholder') || 'Modèle' }} *</label>
+            <label class="block text-sm font-medium text-slate-300 mb-1">{{ i18n.t('clients.modelPlaceholder') }} *</label>
             <input formControlName="model" class="field-input-compact" />
             <div class="text-xs text-red-400 mt-1" *ngIf="carForm.get('model')?.touched && carForm.get('model')?.invalid">
-              Modèle requis
+              {{ i18n.t('clients.modelRequired') }}
             </div>
           </div>
 
           <div>
-            <label class="block text-sm font-medium text-slate-300 mb-1">{{ i18n.t('clients.yearPlaceholder') || 'Année' }}</label>
+            <label class="block text-sm font-medium text-slate-300 mb-1">{{ i18n.t('clients.yearPlaceholder') }}</label>
             <input formControlName="year" type="number" class="field-input-compact" />
           </div>
 
           <div>
-            <label class="block text-sm font-medium text-slate-300 mb-1">{{ i18n.t('clients.platePlaceholder') || 'Plaque' }}</label>
+            <label class="block text-sm font-medium text-slate-300 mb-1">{{ i18n.t('clients.platePlaceholder') }}</label>
             <input formControlName="licensePlate" class="field-input-compact" />
           </div>
 
@@ -395,11 +395,57 @@
     </div>
   </ng-template>
 
+  <!-- Modal de confirmation -->
+  <div *ngIf="confirmDialog" class="fixed inset-0 z-[70] flex items-center justify-center">
+    <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" (click)="closeConfirmDialog()" aria-hidden="true"></div>
+
+    <div role="alertdialog" aria-modal="true" aria-labelledby="confirm-title" aria-describedby="confirm-desc"
+         class="relative w-full max-w-sm mx-4 animate-in fade-in zoom-in-95 duration-200">
+      <div class="card-dark p-6 rounded-2xl shadow-xl border border-white/10">
+        <!-- Icône d'alerte -->
+        <div class="flex justify-center mb-4">
+          <div class="w-12 h-12 rounded-full bg-red-500/20 flex items-center justify-center">
+            <svg class="w-6 h-6 text-red-400" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 9v4m0 4h.01M12 3l9.5 16.5H2.5L12 3z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+        </div>
+
+        <!-- Titre -->
+        <h3 id="confirm-title" class="text-lg font-semibold text-center mb-2">
+          {{ confirmDialog.title }}
+        </h3>
+
+        <!-- Message -->
+        <p id="confirm-desc" class="text-sm text-slate-300 text-center mb-6">
+          {{ confirmDialog.message }}
+        </p>
+
+        <!-- Actions -->
+        <div class="flex gap-3">
+          <button type="button"
+                  (click)="closeConfirmDialog()"
+                  class="flex-1 btn-secondary py-2.5 justify-center">
+            {{ confirmDialog.cancelText || i18n.t('clients.cancel') }}
+          </button>
+          <button type="button"
+                  (click)="confirmAction()"
+                  class="flex-1 bg-red-600 hover:bg-red-700 text-white font-medium py-2.5 px-4 rounded-lg transition-colors flex items-center justify-center gap-2">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M3 6h18M8 6v12a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2V6M10 11v6M14 11v6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            {{ confirmDialog.confirmText || i18n.t('clients.removeButton') }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Loader -->
   <div *ngIf="loading" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
     <div class="flex flex-col items-center gap-4">
       <div class="animate-spin rounded-full h-12 w-12 border-4 border-slate-600 border-t-sky-400"></div>
-      <span class="text-slate-300 text-sm">Chargement...</span>
+      <span class="text-slate-300 text-sm">{{ i18n.t('common.loading') }}</span>
     </div>
   </div>
 </section>

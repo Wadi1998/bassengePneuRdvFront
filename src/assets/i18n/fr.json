@@ -20,7 +20,11 @@
     "free": "Libre",
     "busy": "Occupé",
     "indispo": "Indispo",
-    "unknownClient": "Client inconnu"
+    "unknownClient": "Client inconnu",
+    "loading": "Chargement...",
+    "close": "Fermer",
+    "confirm": "Confirmer",
+    "min": "min"
   },
   "dashboard": {
     "title": "Calendrier",
@@ -43,7 +47,7 @@
     "chooseService": "Choisir un type de service",
     "chooseClient": "Choisir un client",
     "reservePrefix": "Réserver — ",
-    "notEnoughSpace": "Pas assez d'\u00e9space pour {duration} min",
+    "notEnoughSpace": "Pas assez d'espace pour {duration} min",
     "sep": "—"
   },
   "clients": {
@@ -80,13 +84,30 @@
     "carsTitle": "Voitures du client",
     "addCar": "Ajouter une voiture",
     "editCar": "Modifier la voiture",
-    "noCars": "Aucune voiture enregistrée"
+    "noCars": "Aucune voiture enregistrée",
+    "confirmDelete": "Êtes-vous sûr de vouloir supprimer",
+    "confirmDeleteCar": "Voulez-vous vraiment supprimer cette voiture ?",
+    "deleteCar": "Supprimer la voiture",
+    "clientCreated": "Client créé avec succès",
+    "clientUpdated": "Client mis à jour",
+    "clientDeleted": "Client supprimé",
+    "clientCreatedButNoCar": "Client créé mais voiture non ajoutée",
+    "carAdded": "Voiture ajoutée",
+    "carUpdated": "Voiture modifiée",
+    "carDeleted": "Voiture supprimée"
   },
   "actions": {
     "addClientIcon": "👤+"
   },
   "errors": {
-    "loadAppointments": "Impossible de charger les rendez-vous."
+    "loadAppointments": "Impossible de charger les rendez-vous.",
+    "loadClients": "Impossible de charger les clients.",
+    "createClient": "Impossible de créer le client.",
+    "updateClient": "Impossible de mettre à jour le client.",
+    "deleteClient": "Impossible de supprimer le client.",
+    "addCar": "Erreur lors de l'ajout de la voiture.",
+    "updateCar": "Erreur lors de la modification de la voiture.",
+    "deleteCar": "Erreur lors de la suppression de la voiture."
   },
   "appointments": {
     "selectClientPlaceholder": "— Sélectionner un client —",
@@ -99,8 +120,12 @@
     "slotNote": "Pas de 15 min — durée {duration} min",
     "deleteAppointment": "Supprimer le rendez-vous",
     "confirmDelete": "Voulez-vous vraiment supprimer ce rendez-vous ?",
+    "selectCar": "Choisir une voiture",
+    "clientCars": "Voitures du client",
+    "noCars": "Aucune voiture enregistrée",
     "toasts": {
       "chooseClientBefore": "Choisis un client avant de réserver.",
+      "chooseCarBefore": "Choisis une voiture avant de réserver.",
       "serviceRequired": "Saisis un type de service avant de réserver.",
       "bothRequired": "Choisis un client et un type de service avant de réserver.",
       "booked": "Réservé à {time} sur pont {bay}",
