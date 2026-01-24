@@ -23,6 +23,16 @@ export class DashboardComponent implements OnInit {
   isLoading = false;
   showSlots = true;
 
+  // Getter pour vérifier si c'est aujourd'hui
+  get isToday(): boolean {
+    return this.date === this.today();
+  }
+
+  // Getter pour calculer la durée totale des RDV du jour
+  get totalMinutes(): number {
+    return this.items.reduce((sum, a) => sum + (a.duration || 0), 0);
+  }
+
   private readonly appointmentsSvc = inject(AppointmentsService);
   public readonly i18n = inject(I18nService);
 

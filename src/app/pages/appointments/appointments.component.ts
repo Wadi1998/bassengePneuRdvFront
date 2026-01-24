@@ -118,6 +118,21 @@ export class AppointmentsComponent implements OnInit, OnDestroy {
     return this.clientValid && this.carValid && this.serviceValid && !this.isLoading;
   }
 
+  /** Nombre de RDV du jour */
+  get todayCount(): number {
+    return this.items.length;
+  }
+
+  /** Durée totale des RDV du jour en minutes */
+  get totalMinutes(): number {
+    return this.items.reduce((sum, item) => sum + (item.duration || 0), 0);
+  }
+
+  /** Vérifie si la date sélectionnée est aujourd'hui */
+  get isToday(): boolean {
+    return this.date === this.formatDate(new Date());
+  }
+
   // ═══════════════════════════════════════════════════════════════════════════
   // Lifecycle
   // ═══════════════════════════════════════════════════════════════════════════

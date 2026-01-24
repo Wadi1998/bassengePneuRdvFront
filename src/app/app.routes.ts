@@ -1,28 +1,73 @@
-﻿import { Routes } from '@angular/router';
+﻿/**
+ * @file Application Routes
+ * @description Configuration des routes avec lazy loading pour optimiser les performances.
+ * @module routes
+ */
+
+import { Routes } from '@angular/router';
 import { inject } from '@angular/core';
 import { Router } from '@angular/router';
-import { DashboardComponent } from './pages/dashboard/dashboard.component';
-import { ClientsComponent } from './pages/clients/clients.component';
-import { AppointmentsComponent } from './pages/appointments/appointments.component';
-import { LoginComponent } from './pages/login/login.component';
 import { loginGuard } from './pages/login/login.guard';
 
-// Guard pour la redirection dynamique à la racine
+// ─────────────────────────────────────────────────────────────────────────────
+// Guards
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Guard pour la redirection dynamique à la racine.
+ * Redirige vers le dashboard si connecté, sinon vers login.
+ */
 const rootRedirectGuard = () => {
   const router = inject(Router);
   const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
-  if (isLoggedIn) {
-    return router.parseUrl('/dashboard');
-  }
-  return router.parseUrl('/login');
+  return router.parseUrl(isLoggedIn ? '/dashboard' : '/login');
 };
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Routes avec Lazy Loading
+// ─────────────────────────────────────────────────────────────────────────────
+
 export const routes: Routes = [
-  { path: '', pathMatch: 'full', canActivate: [rootRedirectGuard], component: LoginComponent },
-  { path: 'login', component: LoginComponent, title: 'Connexion' },
-  { path: 'dashboard', component: DashboardComponent, title: 'Calendrier', canActivate: [loginGuard] },
-  { path: 'clients', component: ClientsComponent, title: 'Clients', canActivate: [loginGuard] },
-  { path: 'gestion-rendez-vous', component: AppointmentsComponent, title: 'Gestion des rendez-vous', canActivate: [loginGuard] },
-  { path: 'prise-rendez-vous', redirectTo: 'gestion-rendez-vous' }, // Ancien chemin → redirection
+  // Racine - redirection dynamique
+  {
+    path: '',
+    pathMatch: 'full',
+    canActivate: [rootRedirectGuard],
+    loadComponent: () => import('./pages/login/login.component').then(m => m.LoginComponent)
+  },
+
+  // Authentification
+  {
+    path: 'login',
+    title: 'Connexion',
+    loadComponent: () => import('./pages/login/login.component').then(m => m.LoginComponent)
+  },
+
+  // Dashboard (lazy loaded)
+  {
+    path: 'dashboard',
+    title: 'Calendrier',
+    canActivate: [loginGuard],
+    loadComponent: () => import('./pages/dashboard/dashboard.component').then(m => m.DashboardComponent)
+  },
+
+  // Clients (lazy loaded)
+  {
+    path: 'clients',
+    title: 'Clients',
+    canActivate: [loginGuard],
+    loadComponent: () => import('./pages/clients/clients.component').then(m => m.ClientsComponent)
+  },
+
+  // Rendez-vous (lazy loaded)
+  {
+    path: 'gestion-rendez-vous',
+    title: 'Gestion des rendez-vous',
+    canActivate: [loginGuard],
+    loadComponent: () => import('./pages/appointments/appointments.component').then(m => m.AppointmentsComponent)
+  },
+
+  // Redirections
+  { path: 'prise-rendez-vous', redirectTo: 'gestion-rendez-vous' },
   { path: '**', redirectTo: 'login' }
 ];

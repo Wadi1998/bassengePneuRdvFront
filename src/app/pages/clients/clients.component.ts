@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, FormControl } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
 import { ToastrService } from 'ngx-toastr';
-import { Subject, finalize, takeUntil } from 'rxjs';
+import { Subject, finalize, takeUntil, debounceTime, distinctUntilChanged } from 'rxjs';
 
 import { bePhoneLibValidator, parsePhoneBE } from '../../utils/phone-be-lib';
 import { ClientsService } from '../../services/clients.service';
@@ -166,7 +166,11 @@ export class ClientsComponent implements OnInit, AfterViewInit, OnDestroy {
   // ═══════════════════════════════════════════════════════════════════════════
   private initSearchListener(): void {
     this.search.valueChanges
-      .pipe(takeUntil(this.destroy$))
+      .pipe(
+        debounceTime(300), // Attend 300ms après la dernière frappe
+        distinctUntilChanged(), // Ne déclenche que si la valeur change vraiment
+        takeUntil(this.destroy$)
+      )
       .subscribe(() => {
         this.page = 1;
         this.refreshList();
