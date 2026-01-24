@@ -1,0 +1,121 @@
+# ====================================================
+# Configuration Apache pour Angular SPA (Single Page Application)
+# À déployer sur Hostinger avec le contenu de dist/garage-pneu/browser/
+# ====================================================
+
+# Activer le module de réécriture
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Si le répertoire ou fichier existe, le servir directement
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+
+    # Sinon, rediriger vers index.html (Angular Router prend le relais)
+    RewriteRule ^.*$ /index.html [L]
+</IfModule>
+
+# ====================================================
+# Compression GZIP pour améliorer les performances
+# ====================================================
+<IfModule mod_deflate.c>
+    # Compresser les fichiers texte
+    AddOutputFilterByType DEFLATE text/plain
+    AddOutputFilterByType DEFLATE text/html
+    AddOutputFilterByType DEFLATE text/xml
+    AddOutputFilterByType DEFLATE text/css
+    AddOutputFilterByType DEFLATE text/javascript
+    AddOutputFilterByType DEFLATE application/xml
+    AddOutputFilterByType DEFLATE application/xhtml+xml
+    AddOutputFilterByType DEFLATE application/rss+xml
+    AddOutputFilterByType DEFLATE application/javascript
+    AddOutputFilterByType DEFLATE application/x-javascript
+    AddOutputFilterByType DEFLATE application/json
+    AddOutputFilterByType DEFLATE application/font-woff
+    AddOutputFilterByType DEFLATE application/font-woff2
+    AddOutputFilterByType DEFLATE image/svg+xml
+</IfModule>
+
+# ====================================================
+# Cache des fichiers statiques (assets, JS, CSS)
+# ====================================================
+<IfModule mod_expires.c>
+    ExpiresActive On
+
+    # Images - Cache 1 an
+    ExpiresByType image/jpg "access plus 1 year"
+    ExpiresByType image/jpeg "access plus 1 year"
+    ExpiresByType image/gif "access plus 1 year"
+    ExpiresByType image/png "access plus 1 year"
+    ExpiresByType image/webp "access plus 1 year"
+    ExpiresByType image/svg+xml "access plus 1 year"
+    ExpiresByType image/x-icon "access plus 1 year"
+
+    # Polices - Cache 1 an
+    ExpiresByType font/woff "access plus 1 year"
+    ExpiresByType font/woff2 "access plus 1 year"
+    ExpiresByType application/font-woff "access plus 1 year"
+    ExpiresByType application/font-woff2 "access plus 1 year"
+
+    # CSS et JavaScript - Cache 1 an (Angular utilise le hashing)
+    ExpiresByType text/css "access plus 1 year"
+    ExpiresByType application/javascript "access plus 1 year"
+    ExpiresByType application/x-javascript "access plus 1 year"
+
+    # HTML - Pas de cache (pour les mises à jour immédiates)
+    ExpiresByType text/html "access plus 0 seconds"
+
+    # JSON - Cache court
+    ExpiresByType application/json "access plus 1 hour"
+</IfModule>
+
+# ====================================================
+# Headers de sécurité
+# ====================================================
+<IfModule mod_headers.c>
+    # Protection contre le clickjacking
+    Header always set X-Frame-Options "SAMEORIGIN"
+
+    # Protection XSS
+    Header always set X-XSS-Protection "1; mode=block"
+
+    # Empêcher le sniffing MIME
+    Header always set X-Content-Type-Options "nosniff"
+
+    # Politique de référent
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+
+    # Permissions Policy
+    Header always set Permissions-Policy "geolocation=(), microphone=(), camera=()"
+
+    # Cache control pour index.html (forcer la revalidation)
+    <FilesMatch "index\.html$">
+        Header set Cache-Control "no-cache, no-store, must-revalidate"
+        Header set Pragma "no-cache"
+        Header set Expires 0
+    </FilesMatch>
+</IfModule>
+
+# ====================================================
+# Forcer HTTPS (recommandé pour la production)
+# Décommenter si vous avez un certificat SSL sur Hostinger
+# ====================================================
+# <IfModule mod_rewrite.c>
+#     RewriteEngine On
+#     RewriteCond %{HTTPS} off
+#     RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+# </IfModule>
+
+# ====================================================
+# Bloquer l'accès aux fichiers sensibles
+# ====================================================
+<FilesMatch "^\.">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# Protéger les fichiers de configuration
+<FilesMatch "(package\.json|angular\.json|tsconfig\.json)$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>

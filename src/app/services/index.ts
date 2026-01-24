@@ -4,7 +4,7 @@
  * Facilite les imports et améliore la maintenabilité.
  *
  * @example
- * import { ClientsService, CarsService, AppointmentsService } from '@app/services';
+ * import { ClientsService, CarsService, AppointmentsService, KeycloakService } from '@app/services';
  */
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -15,9 +15,11 @@ export { CarsService } from './cars.service';
 export { AppointmentsService } from './appointments.service';
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Auth
+// Auth / Keycloak
 // ─────────────────────────────────────────────────────────────────────────────
+export { KeycloakService, type UserProfile } from './keycloak.service';
 export { AuthService } from './auth.service';
+export { authInterceptor } from './auth.interceptor';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Internationalisation

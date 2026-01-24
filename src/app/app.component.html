@@ -1,7 +1,7 @@
 ﻿<!-- App Shell -->
 <div class="min-h-screen flex bg-brand-dark text-slate-100">
   <!-- SIDEBAR -->
-  <aside *ngIf="isLoggedIn" class="hidden md:flex md:flex-col md:w-72
+  <aside *ngIf="isLoggedIn()" class="hidden md:flex md:flex-col md:w-72
                 bg-gradient-to-b from-brand-mid to-brand-dark border-r border-white/10">
     <!-- Logo -->
     <div class="h-16 flex items-center px-5 border-b border-white/10">
@@ -49,7 +49,7 @@
       <!-- TOPBAR -->
       <header class="h-16 bg-brand-mid/60 backdrop-blur border-b border-white/10
                      flex items-center px-4 md:px-6 gap-3">
-        <button *ngIf="isLoggedIn" class="md:hidden inline-flex items-center justify-center h-10 w-10 rounded-xl border border-white/10"
+        <button *ngIf="isLoggedIn()" class="md:hidden inline-flex items-center justify-center h-10 w-10 rounded-xl border border-white/10"
                 (click)="open = !open" aria-label="{{ i18n.t('app.menuAria') }}">
           <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.6">
             <path d="M4 6h16M4 12h16M4 18h16" />
@@ -73,7 +73,7 @@
             <option value="en" [selected]="i18n.currentLang === 'en'">🇬🇧 EN</option>
           </select>
 
-          <button *ngIf="isLoggedIn" (click)="logout()"
+          <button *ngIf="isLoggedIn()" (click)="logout()"
                   class="flex items-center gap-2 px-4 py-2 rounded-lg bg-rose-500/10 border border-rose-500/30 text-rose-300 hover:bg-rose-500/20 transition text-sm font-medium">
             <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>

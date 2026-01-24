@@ -1,8 +1,8 @@
-﻿import { Component, inject } from '@angular/core';
+﻿import { Component, inject, ChangeDetectorRef, OnInit } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
-import {CommonModule} from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { I18nService } from './services/i18n.service';
-import { AuthService } from './services/auth.service';
+import { KeycloakService } from './services/keycloak.service';
 
 @Component({
   standalone: true,
@@ -10,20 +10,47 @@ import { AuthService } from './services/auth.service';
   imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive],
   templateUrl: './app.component.html'
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
   open = false;          // pour le menu mobile
-  today = new Date();    // <-- ajoute ceci
+  today = new Date();
 
-  // Prefer `inject()` (standalone / functional style)
+  // Services
   public i18n = inject(I18nService);
-  private auth = inject(AuthService);
+  public keycloak = inject(KeycloakService);
+  private cdr = inject(ChangeDetectorRef);
 
-  get isLoggedIn(): boolean {
-    return this.auth.isLoggedIn();
+  ngOnInit(): void {
+    // Forcer la mise à jour après initialisation Keycloak
+    console.log('AppComponent init, isAuthenticated:', this.keycloak.isAuthenticated());
   }
 
-  logout() {
-    this.auth.logout();
-    window.location.href = '/login';
+  /**
+   * Vérifie si l'utilisateur est connecté
+   */
+  isLoggedIn(): boolean {
+    const authenticated = this.keycloak.isAuthenticated();
+    console.log('isLoggedIn called:', authenticated);
+    return authenticated;
+  }
+
+  /**
+   * Récupère le profil utilisateur
+   */
+  get userProfile() {
+    return this.keycloak.userProfile();
+  }
+
+  /**
+   * Vérifie si l'utilisateur est admin
+   */
+  get isAdmin(): boolean {
+    return this.keycloak.isAdmin();
+  }
+
+  /**
+   * Déconnexion via Keycloak
+   */
+  async logout(): Promise<void> {
+    await this.keycloak.logout();
   }
 }

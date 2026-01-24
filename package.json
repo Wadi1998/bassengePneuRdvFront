@@ -3,9 +3,20 @@
   "version": "0.0.0",
   "scripts": {
     "start": "ng serve",
+    "start:prod": "ng serve --configuration=production",
+    "start:staging": "ng serve --configuration=staging",
     "build": "ng build",
+    "build:dev": "ng build --configuration=development",
+    "build:staging": "ng build --configuration=staging",
+    "build:prod": "ng build --configuration=production",
+    "build:analyze": "ng build --configuration=production --stats-json && npx webpack-bundle-analyzer dist/garage-pneu/browser/stats.json",
     "test": "ng test",
-    "lint": "ng lint"
+    "test:ci": "ng test --no-watch --code-coverage",
+    "lint": "ng lint",
+    "lint:fix": "ng lint --fix",
+    "deploy:prod": "npm run build:prod && echo 'Build terminé! Uploadez le contenu de dist/garage-pneu/browser/ sur Hostinger'",
+    "deploy:staging": "npm run build:staging && echo 'Build staging terminé!'",
+    "clean": "rm -rf dist node_modules/.cache"
   },
   "prettier": {
     "printWidth": 100,
@@ -33,6 +44,7 @@
     "@ngx-translate/http-loader": "^17.0.0",
     "google-libphonenumber": "^3.2.43",
     "jspdf": "^3.0.3",
+    "keycloak-js": "^26.2.2",
     "ngx-intl-tel-input": "^17.0.0",
     "ngx-toastr": "^19.1.0",
     "rxjs": "~7.8.0",

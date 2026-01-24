@@ -1,34 +1,18 @@
 ﻿/**
  * @file Application Routes
- * @description Configuration des routes avec lazy loading pour optimiser les performances.
+ * @description Configuration des routes avec lazy loading et protection Keycloak.
  * @module routes
  */
 
 import { Routes } from '@angular/router';
-import { inject } from '@angular/core';
-import { Router } from '@angular/router';
-import { loginGuard } from './pages/login/login.guard';
+import { authGuard, loginPageGuard, rootRedirectGuard } from './guards/auth.guard';
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Guards
-// ─────────────────────────────────────────────────────────────────────────────
-
-/**
- * Guard pour la redirection dynamique à la racine.
- * Redirige vers le dashboard si connecté, sinon vers login.
- */
-const rootRedirectGuard = () => {
-  const router = inject(Router);
-  const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
-  return router.parseUrl(isLoggedIn ? '/dashboard' : '/login');
-};
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Routes avec Lazy Loading
+// Routes avec Lazy Loading et Protection Keycloak
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const routes: Routes = [
-  // Racine - redirection dynamique
+  // Racine - redirection dynamique basée sur l'état d'authentification
   {
     path: '',
     pathMatch: 'full',
@@ -36,34 +20,35 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/login/login.component').then(m => m.LoginComponent)
   },
 
-  // Authentification
+  // Authentification - page de login
   {
     path: 'login',
     title: 'Connexion',
+    canActivate: [loginPageGuard],
     loadComponent: () => import('./pages/login/login.component').then(m => m.LoginComponent)
   },
 
-  // Dashboard (lazy loaded)
+  // Dashboard (lazy loaded, protégé)
   {
     path: 'dashboard',
     title: 'Calendrier',
-    canActivate: [loginGuard],
+    canActivate: [authGuard],
     loadComponent: () => import('./pages/dashboard/dashboard.component').then(m => m.DashboardComponent)
   },
 
-  // Clients (lazy loaded)
+  // Clients (lazy loaded, protégé)
   {
     path: 'clients',
     title: 'Clients',
-    canActivate: [loginGuard],
+    canActivate: [authGuard],
     loadComponent: () => import('./pages/clients/clients.component').then(m => m.ClientsComponent)
   },
 
-  // Rendez-vous (lazy loaded)
+  // Rendez-vous (lazy loaded, protégé)
   {
     path: 'gestion-rendez-vous',
     title: 'Gestion des rendez-vous',
-    canActivate: [loginGuard],
+    canActivate: [authGuard],
     loadComponent: () => import('./pages/appointments/appointments.component').then(m => m.AppointmentsComponent)
   },
 
