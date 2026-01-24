@@ -31,8 +31,8 @@ export interface CarResponse {
   /** ID du client propriétaire */
   clientId?: number;
 
-  /** Nom complet du client (pour affichage) */
-  clientFullName?: string;
+  /** Description courte du véhicule (calculée par le backend) */
+  shortDescription?: string;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -47,16 +47,16 @@ export interface CarRequest {
   /** ID du client propriétaire (requis) */
   clientId: number;
 
-  /** Marque du véhicule (requis) */
+  /** Marque du véhicule (requis, max 50 caractères) */
   brand: string;
 
-  /** Modèle du véhicule (requis) */
+  /** Modèle du véhicule (requis, max 50 caractères) */
   model: string;
 
   /** Année de fabrication (optionnel) */
   year?: number;
 
-  /** Plaque d'immatriculation (optionnel) */
+  /** Plaque d'immatriculation (optionnel, max 20 caractères) */
   licensePlate?: string;
 }
 

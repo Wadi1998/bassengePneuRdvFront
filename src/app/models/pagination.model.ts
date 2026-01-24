@@ -11,19 +11,22 @@
  */
 export interface PageResponse<T> {
   /** Liste des éléments de la page courante */
-  items: T[];
+  content: T[];
 
   /** Nombre total d'éléments (toutes pages confondues) */
-  total: number;
+  totalItems: number;
 
   /** Numéro de la page courante (commence à 1) */
-  page: number;
+  currentPage: number;
 
   /** Nombre d'éléments par page */
   pageSize: number;
 
   /** Nombre total de pages */
   totalPages: number;
+
+  /** Indique si la page est vide */
+  empty: boolean;
 }
 
 /**

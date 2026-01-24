@@ -190,9 +190,9 @@ export class AppointmentsComponent implements OnInit, OnDestroy {
       const data = await lastValueFrom(
         this.clientsApi.listFiltered(this.clientSearch, 1, 10)
       );
-      this.clients = data.items;
+      this.clients = data.content;
       this.clientsById.clear();
-      data.items.forEach(client => this.clientsById.set(client.id, client));
+      data.content.forEach((client: Client) => this.clientsById.set(client.id, client));
     } catch (err) {
       console.error('Erreur lors du chargement des clients', err);
       this.toastr.error(this.i18n.t('errors.loadClients'));

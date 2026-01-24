@@ -195,8 +195,8 @@ export class ClientsComponent implements OnInit, AfterViewInit, OnDestroy {
       )
       .subscribe({
         next: (data) => {
-          this.items = [...data.items];
-          this.totalClient = data.total;
+          this.items = [...data.content];
+          this.totalClient = data.totalItems;
           this.loadCarsForClients();
         },
         error: (err) => this.handleError(err, 'errors.loadClients')
@@ -367,6 +367,7 @@ export class ClientsComponent implements OnInit, AfterViewInit, OnDestroy {
       .subscribe({
         next: (newCar) => {
           this.clientCars = [...this.clientCars, newCar];
+          this.updateClientCarsInList();
           this.toastr.success(this.i18n.t('clients.carAdded') || 'Voiture ajoutée');
           this.closeCarPopup();
         },
@@ -381,6 +382,7 @@ export class ClientsComponent implements OnInit, AfterViewInit, OnDestroy {
       .subscribe({
         next: (updatedCar) => {
           this.clientCars = this.clientCars.map((c) => (c.id === updatedCar.id ? updatedCar : c));
+          this.updateClientCarsInList();
           this.toastr.success(this.i18n.t('clients.carUpdated') || 'Voiture modifiée');
           this.closeCarPopup();
         },
@@ -405,10 +407,25 @@ export class ClientsComponent implements OnInit, AfterViewInit, OnDestroy {
       .subscribe({
         next: () => {
           this.clientCars = this.clientCars.filter((c) => c.id !== carId);
+          this.updateClientCarsInList();
           this.toastr.info(this.i18n.t('clients.carDeleted') || 'Voiture supprimée');
         },
         error: () => this.toastr.error(this.i18n.t('errors.deleteCar') || 'Erreur lors de la suppression')
       });
+  }
+
+  /**
+   * Synchronise les voitures du client courant dans la liste principale.
+   */
+  private updateClientCarsInList(): void {
+    if (this.currentClientId === null) return;
+
+    this.items = this.items.map((client) => {
+      if (client.id === this.currentClientId) {
+        return { ...client, cars: [...this.clientCars] };
+      }
+      return client;
+    });
   }
 
   // ═══════════════════════════════════════════════════════════════════════════

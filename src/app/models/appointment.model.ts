@@ -37,7 +37,7 @@ export interface AppointmentResponse {
   /** Heure de début au format HH:mm */
   time: string;
 
-  /** Durée en minutes (par défaut: 30) */
+  /** Durée en minutes */
   duration?: number;
 
   /** Pont de travail (A ou B) */
@@ -46,14 +46,14 @@ export interface AppointmentResponse {
   /** ID du client */
   clientId?: number;
 
-  /** Nom complet du client (pour affichage) */
-  clientFullName?: string;
+  /** Nom du client (pour affichage) */
+  clientName?: string;
 
   /** ID du véhicule */
   carId?: number;
 
-  /** Informations sur le véhicule (pour affichage) */
-  carInfo?: string;
+  /** Description de la voiture (pour affichage) */
+  carDescription?: string;
 
   /** Type de service (ex: "Changement pneus") */
   serviceType?: string;
@@ -77,7 +77,7 @@ export interface AppointmentRequest {
   /** Heure de début au format HH:mm (requis) */
   time: string;
 
-  /** Durée en minutes (optionnel, défaut: 30) */
+  /** Durée en minutes (minimum 15) */
   duration?: number;
 
   /** Pont de travail A ou B (requis) */
@@ -102,20 +102,5 @@ export interface AppointmentRequest {
 
 /**
  * Alias principal pour un rendez-vous.
- * Combine les propriétés de AppointmentResponse avec des champs legacy.
  */
-export interface Appointment {
-  id?: number;
-  date: string;
-  time: string;
-  duration?: number;
-  bay: string;
-  clientId?: number;
-  /** @deprecated Utiliser clientFullName à la place */
-  clientName?: string;
-  clientFullName?: string;
-  carId?: number;
-  carInfo?: string;
-  serviceType?: string;
-  serviceNote?: string;
-}
+export type Appointment = AppointmentResponse;

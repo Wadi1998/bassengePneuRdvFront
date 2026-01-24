@@ -20,7 +20,7 @@ interface SlotVM {
   state: SlotState;
   clientName?: string;
   serviceType?: string;
-  carInfo?: string;          // Info voiture
+  carDescription?: string;   // Description voiture
   note?: string;
   appointmentId?: number;    // ID du rendez-vous pour la suppression
   // Propriétés pour le regroupement visuel
@@ -142,9 +142,9 @@ export class SlotPickerComponent implements OnChanges {
               time,
               endTime,
               state: 'busy',
-              clientName: overlapAppt.clientFullName || overlapAppt.clientName,
+              clientName: overlapAppt.clientName,
               serviceType: overlapAppt.serviceType,
-              carInfo: overlapAppt.carInfo,
+              carDescription: overlapAppt.carDescription,
               appointmentId: overlapAppt.id,
               isFirstOfGroup: true,
               isLastOfGroup: true,

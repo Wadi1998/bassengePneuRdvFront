@@ -29,6 +29,9 @@ export interface ClientResponse {
 
   /** Liste des voitures associées au client (optionnel) */
   cars?: Car[];
+
+  /** Nom complet du client (calculé par le backend) */
+  fullName?: string;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -40,13 +43,13 @@ export interface ClientResponse {
  * @interface ClientRequest
  */
 export interface ClientRequest {
-  /** Prénom du client (requis) */
+  /** Prénom du client (requis, 2-100 caractères) */
   firstName: string;
 
-  /** Nom de famille du client (requis) */
+  /** Nom de famille du client (requis, 2-100 caractères) */
   name: string;
 
-  /** Numéro de téléphone au format E.164 (requis) */
+  /** Numéro de téléphone (requis, max 20 caractères) */
   phone: string;
 }
 
