@@ -1,6 +1,7 @@
 ﻿import { Component, OnInit, ChangeDetectorRef, ViewChildren, QueryList, inject, OnDestroy } from '@angular/core';
 import { CommonModule, NgFor, NgIf, UpperCasePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { Subject, takeUntil, lastValueFrom } from 'rxjs';
 import { ToastrService } from 'ngx-toastr';
 
@@ -24,6 +25,7 @@ import { ConfirmDialogComponent, ConfirmDialogData } from '../../components/conf
   imports: [
     CommonModule,
     FormsModule,
+    RouterLink,
     NgIf,
     NgFor,
     UpperCasePipe,
@@ -204,6 +206,11 @@ export class AppointmentsComponent implements OnInit, OnDestroy {
     const d = this.parseDate(this.date);
     d.setDate(d.getDate() + 1);
     this.date = this.formatDate(d);
+    await this.handleDateChange();
+  }
+
+  async goToday(): Promise<void> {
+    this.date = this.formatDate(new Date());
     await this.handleDateChange();
   }
 

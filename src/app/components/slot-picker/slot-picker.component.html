@@ -17,19 +17,21 @@
 
     <!-- Slot LIBRE -->
     <div *ngIf="s.state === 'free'"
-      class="w-full text-left border px-4 py-3 transition flex items-center gap-4 rounded-xl cursor-pointer"
-      [ngClass]="canBook
-        ? 'border-emerald-500/20 bg-emerald-500/5 hover:bg-emerald-500/10 hover:border-emerald-500/40'
-        : 'border-amber-500/20 bg-amber-500/5'"
-      [title]="!canBook
+      class="w-full text-left border px-4 py-3 transition flex items-center gap-4 rounded-xl"
+      [ngClass]="readOnly
+        ? 'border-emerald-500/20 bg-emerald-500/5 cursor-default'
+        : (canBook
+            ? 'border-emerald-500/20 bg-emerald-500/5 hover:bg-emerald-500/10 hover:border-emerald-500/40 cursor-pointer'
+            : 'border-amber-500/20 bg-amber-500/5 cursor-pointer')"
+      [title]="readOnly ? '' : (!canBook
                 ? (needService && needClient ? i18n.t('slot.chooseClientAndService')
                    : (needService ? i18n.t('slot.chooseService') : i18n.t('slot.chooseClient')))
-                : ''"
+                : '')"
       (click)="onClick(s.time, s.state)"
     >
       <span class="w-16 shrink-0 font-mono text-sm font-semibold text-slate-300">{{ s.time }}</span>
       <span class="flex-1 text-sm text-slate-400">{{ i18n.t('common.free') }}</span>
-      <span class="text-xs px-3 py-1.5 rounded-full border shrink-0 font-medium"
+      <span *ngIf="!readOnly" class="text-xs px-3 py-1.5 rounded-full border shrink-0 font-medium"
             [ngClass]="canBook
               ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-400'
               : 'border-amber-500/30 bg-amber-500/10 text-amber-400'">
@@ -37,6 +39,9 @@
            ? (i18n.t('slot.reservePrefix') + (serviceType || i18n.t('slot.chooseService')))
            : (needService && needClient ? i18n.t('slot.chooseClientAndService')
              : (needService ? i18n.t('slot.chooseService') : i18n.t('slot.chooseClient'))) }}
+      </span>
+      <span *ngIf="readOnly" class="text-xs px-3 py-1.5 rounded-full border shrink-0 font-medium border-emerald-500/30 bg-emerald-500/10 text-emerald-400">
+        {{ i18n.t('common.free') }}
       </span>
     </div>
 
@@ -80,7 +85,7 @@
             {{ s.duration }} min
           </span>
           <button
-            *ngIf="s.appointmentId"
+            *ngIf="s.appointmentId && !readOnly"
             type="button"
             (click)="onDelete($event, s.appointmentId)"
             class="p-2 rounded-lg bg-rose-500/20 border border-rose-500/40 text-rose-300 hover:bg-rose-500/30 hover:text-rose-200 transition"

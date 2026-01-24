@@ -20,8 +20,9 @@ const rootRedirectGuard = () => {
 export const routes: Routes = [
   { path: '', pathMatch: 'full', canActivate: [rootRedirectGuard], component: LoginComponent },
   { path: 'login', component: LoginComponent, title: 'Connexion' },
-  { path: 'dashboard', component: DashboardComponent, title: 'Accueil', canActivate: [loginGuard] },
+  { path: 'dashboard', component: DashboardComponent, title: 'Calendrier', canActivate: [loginGuard] },
   { path: 'clients', component: ClientsComponent, title: 'Clients', canActivate: [loginGuard] },
-  { path: 'prise-rendez-vous', component: AppointmentsComponent, title: 'Prise de rendez-vous', canActivate: [loginGuard] },
+  { path: 'gestion-rendez-vous', component: AppointmentsComponent, title: 'Gestion des rendez-vous', canActivate: [loginGuard] },
+  { path: 'prise-rendez-vous', redirectTo: 'gestion-rendez-vous' }, // Ancien chemin → redirection
   { path: '**', redirectTo: 'login' }
 ];

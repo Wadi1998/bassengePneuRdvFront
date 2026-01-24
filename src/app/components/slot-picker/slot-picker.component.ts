@@ -1,4 +1,4 @@
-﻿﻿import { ChangeDetectionStrategy,
+﻿import { ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
   EventEmitter,
@@ -49,6 +49,7 @@ export class SlotPickerComponent implements OnChanges {
   @Input() needService!: boolean;
   @Input() needClient!: boolean;
   @Input() isLoading: boolean = false;
+  @Input() readOnly: boolean = false;        // Mode lecture seule (dashboard)
 
   // ---------- Outputs ----------
   @Output() pick = new EventEmitter<string>();                         // émet l'heure "HH:mm"
@@ -153,7 +154,8 @@ export class SlotPickerComponent implements OnChanges {
             });
           }
           // Ne rien ajouter pour les slots suivants du même rendez-vous
-        } else if (!windowFree) {
+        } else if (!windowFree && !this.readOnly) {
+          // En mode readOnly (Dashboard), on ignore la vérification de durée
           out.push({
             time,
             state: 'indispo',
@@ -217,6 +219,9 @@ export class SlotPickerComponent implements OnChanges {
 
   // ---------- Interaction ----------
   onClick(time: string, state: SlotState) {
+    // Mode lecture seule = pas de clic
+    if (this.readOnly) return;
+
     // On ne clique que sur 'free'
     if (state !== 'free') return;
 
@@ -233,6 +238,9 @@ export class SlotPickerComponent implements OnChanges {
   }
 
   onDelete(event: Event, appointmentId: number | undefined) {
+    // Mode lecture seule = pas de suppression
+    if (this.readOnly) return;
+
     event.stopPropagation(); // Empêcher le clic sur le bouton parent
     if (appointmentId) {
       this.deleteAppointment.emit(appointmentId);

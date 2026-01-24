@@ -1,61 +1,25 @@
-﻿/**
- * @file Client Model
- * @description Modèles de données pour la gestion des clients du garage.
- * @module models/client
- */
-
-import { Car } from './car.model';
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Response DTOs (données reçues de l'API)
-// ─────────────────────────────────────────────────────────────────────────────
-
 /**
- * Représente un client tel que retourné par l'API.
- * @interface ClientResponse
+ * @file Services Index
+ * @description Point d'entrée centralisé pour tous les services de l'application.
+ * Facilite les imports et améliore la maintenabilité.
+ *
+ * @example
+ * import { ClientsService, CarsService, AppointmentsService } from '@app/services';
  */
-export interface ClientResponse {
-  /** Identifiant unique du client */
-  id: number;
-
-  /** Prénom du client */
-  firstName: string;
-
-  /** Nom de famille du client */
-  name: string;
-
-  /** Numéro de téléphone au format E.164 (ex: +32470123456) */
-  phone: string;
-
-  /** Liste des voitures associées au client (optionnel) */
-  cars?: Car[];
-}
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Request DTOs (données envoyées à l'API)
+// API Services
 // ─────────────────────────────────────────────────────────────────────────────
-
-/**
- * Payload pour créer ou mettre à jour un client.
- * @interface ClientRequest
- */
-export interface ClientRequest {
-  /** Prénom du client (requis) */
-  firstName: string;
-
-  /** Nom de famille du client (requis) */
-  name: string;
-
-  /** Numéro de téléphone au format E.164 (requis) */
-  phone: string;
-}
+export { ClientsService } from './clients.service';
+export { CarsService } from './cars.service';
+export { AppointmentsService } from './appointments.service';
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Type Aliases
+// Auth
 // ─────────────────────────────────────────────────────────────────────────────
+export { AuthService } from './auth.service';
 
-/**
- * Alias principal pour un client.
- * Utilisé dans toute l'application pour une meilleure lisibilité.
- */
-export type Client = ClientResponse;
+// ─────────────────────────────────────────────────────────────────────────────
+// Internationalisation
+// ─────────────────────────────────────────────────────────────────────────────
+export { I18nService } from './i18n.service';

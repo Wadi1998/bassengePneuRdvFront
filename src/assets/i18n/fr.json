@@ -7,8 +7,8 @@
     "menuAria": "Menu"
   },
   "nav": {
-    "home": "Accueil",
-    "booking": "Prise-rendez-vous",
+    "home": "Calendrier",
+    "booking": "Gestion rendez-vous",
     "clients": "Clients"
   },
   "phone": {
@@ -27,10 +27,15 @@
     "min": "min"
   },
   "dashboard": {
-    "title": "Calendrier",
+    "title": "Calendrier du jour",
     "defaultDurationNote": "durée par défaut 30 min",
-    "slotsA": "Pont (A)",
-    "slotsB": "Pont (B)",
+    "slotsA": "Pont A",
+    "slotsB": "Pont B",
+    "readOnlyMode": "Consultation uniquement",
+    "viewOnly": "Lecture seule",
+    "appointmentCount": "{count} rendez-vous",
+    "noAppointments": "Aucun rendez-vous",
+    "addAppointment": "Nouveau RDV",
     "exportPdf": "Exporter en PDF",
     "exportTitle": "Liste des rendez-vous",
     "exportNoAppointments": "Aucun rendez-vous pour la période sélectionnée.",
@@ -110,10 +115,23 @@
     "deleteCar": "Erreur lors de la suppression de la voiture."
   },
   "appointments": {
+    "title": "Gestion des rendez-vous",
     "selectClientPlaceholder": "— Sélectionner un client —",
     "searchClientPlaceholder": "Rechercher un client...",
-    "servicePlaceholder": "Type de service (obligatoire)",
-    "serviceRequired": "Saisis un type de service avant de réserver.",
+    "servicePlaceholder": "Service...",
+    "serviceRequired": "Choisis un type de service avant de réserver.",
+    "commonServices": "Services courants",
+    "services": {
+      "changementPneus": "Changement pneus",
+      "equilibrage": "Équilibrage",
+      "parallelisme": "Parallélisme",
+      "reparation": "Réparation pneu",
+      "permutation": "Permutation pneus",
+      "controle": "Contrôle / Vérification",
+      "stockage": "Stockage pneus",
+      "custom": "Autre..."
+    },
+    "today": "Aujourd'hui",
     "prevDay": "Jour -1",
     "nextDay": "Jour +1",
     "changeClient": "Changer",
@@ -123,6 +141,7 @@
     "selectCar": "Choisir une voiture",
     "clientCars": "Voitures du client",
     "noCars": "Aucune voiture enregistrée",
+    "newClient": "Nouveau client",
     "toasts": {
       "chooseClientBefore": "Choisis un client avant de réserver.",
       "chooseCarBefore": "Choisis une voiture avant de réserver.",
