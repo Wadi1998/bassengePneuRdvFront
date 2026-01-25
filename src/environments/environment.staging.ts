@@ -1,47 +1,47 @@
 /**
- * Configuration de l'environnement de STAGING (Pré-production)
+ * Configuration de l'environnement de STAGING / VPS HOSTINGER
  * Ce fichier remplace environment.ts lors de `ng build --configuration=staging`
  *
- * Utilisé pour les tests avant la mise en production
+ * Déploiement sur VPS Hostinger - IP: 72.62.182.169
  */
 
 export const environment = {
   // Mode de l'application
-  production: true, // Comportement production mais avec logs
+  production: true,
   envName: 'staging',
 
-  // Configuration de l'API Backend (Staging)
-  apiBase: 'https://staging-api.garagepneu.be',
+  // Configuration de l'API Backend (sur le même serveur VPS)
+  apiBase: 'http://72.62.182.169:8080',
   apiTimeout: 30000, // 30 secondes
 
-  // Configuration Keycloak (Authentification Staging)
+  // Configuration Keycloak (Authentification)
   keycloak: {
-    url: 'https://staging-auth.garagepneu.be',
+    url: 'http://72.62.182.169:8180',
     realm: 'garage-realm',
     clientId: 'garagepneu-front',
     // Options SSO
     silentCheckSsoRedirectUri: '/assets/silent-check-sso.html',
     checkLoginIframe: false,
-    enableLogging: true // Activé pour le debugging en staging
+    enableLogging: true // Activé pour le staging pour le debug
   },
 
   // Configuration de l'application
   app: {
-    name: 'Bassenge Pneu - RDV [STAGING]',
-    version: '1.0.0-staging',
+    name: 'Bassenge Pneu - RDV (Staging)',
+    version: '1.0.0',
     defaultLanguage: 'fr',
     supportedLanguages: ['fr', 'nl', 'en']
   },
 
   // Configuration des logs
   logging: {
-    level: 'info', // Plus de logs qu'en production
-    enableConsole: true // Activé pour le debugging
+    level: 'debug', // Debug en staging pour diagnostiquer les problèmes
+    enableConsole: true
   },
 
   // Configuration des fonctionnalités (Feature Flags)
   features: {
-    enableAnalytics: false, // Désactivé en staging pour ne pas polluer les données
+    enableAnalytics: false, // Désactivé en staging
     enableNotifications: true,
     enableMaintenanceMode: false
   }

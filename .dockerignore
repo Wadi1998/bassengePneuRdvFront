@@ -1,0 +1,57 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# 🐳 Docker Ignore - Bassenge Pneu Frontend
+# ═══════════════════════════════════════════════════════════════════════════════
+# Fichiers et dossiers à exclure du contexte de build Docker
+
+# Dépendances
+node_modules
+npm-debug.log
+yarn-error.log
+
+# Build local
+dist
+.angular
+
+# Git
+.git
+.gitignore
+
+# IDE
+.idea
+.vscode
+*.swp
+*.swo
+*~
+
+# Tests
+coverage
+.nyc_output
+
+# Documentation
+*.md
+!README.md
+
+# Configuration locale
+.env
+.env.local
+.env.*.local
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+logs
+*.log
+
+# Temporaires
+tmp
+temp
+*.tmp
+*.temp
+
+# Scripts non nécessaires au build
+scripts/
+
+# GitHub Actions (pas besoin dans l'image)
+.github/
