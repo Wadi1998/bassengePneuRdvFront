@@ -20,6 +20,7 @@ on:
       - main
       - staging
       - master
+  workflow_dispatch:  # Déclenchement manuel
 
 env:
   NODE_VERSION: '20'
