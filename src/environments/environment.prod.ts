@@ -2,7 +2,7 @@
  * Configuration de l'environnement de PRODUCTION
  * Ce fichier remplace environment.ts lors de `ng build --configuration=production`
  *
- * Déploiement sur Hostinger - Domaine: garagepneu.be
+ * Déploiement sur Hostinger - Domaine: bassenge-pneus.com
  */
 
 export const environment = {
@@ -11,12 +11,12 @@ export const environment = {
   envName: 'production',
 
   // Configuration de l'API Backend
-  apiBase: 'https://api.garagepneu.be',
+  apiBase: 'https://api.bassenge-pneus.com',
   apiTimeout: 30000, // 30 secondes
 
   // Configuration Keycloak (Authentification)
   keycloak: {
-    url: 'https://auth.garagepneu.be',
+    url: 'https://auth.bassenge-pneus.com',
     realm: 'garage-realm',
     clientId: 'garagepneu-front',
     // Options SSO

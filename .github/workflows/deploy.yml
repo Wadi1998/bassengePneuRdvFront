@@ -51,8 +51,8 @@ jobs:
         run: npm run lint || true
         continue-on-error: true
 
-      - name: 🏗️ Build de staging
-        run: npm run build:staging
+      - name: 🏗️ Build de production
+        run: npm run build:prod
 
       - name: 📤 Upload du build artifact
         uses: actions/upload-artifact@v4
@@ -111,14 +111,14 @@ jobs:
             # Supprimer l'ancienne image
             docker rmi garagepneu-frontend:latest 2>/dev/null || true
 
-            # Builder la nouvelle image
-            docker build -t garagepneu-frontend:latest --build-arg BUILD_CONFIGURATION=staging .
+            # Builder la nouvelle image (prod)
+            docker build -t garagepneu-frontend:latest --build-arg BUILD_CONFIGURATION=prod .
 
             # Lancer le conteneur
             docker run -d \
               --name garagepneu-frontend \
               --network garagepneu-network \
-              -p 3000:80 \
+              -p 127.0.0.1:3000:80 \
               --restart unless-stopped \
               garagepneu-frontend:latest
 
@@ -134,15 +134,25 @@ jobs:
           echo "⏳ Attente du démarrage du service..."
           sleep 10
 
-          # Vérifier que le frontend répond
-          response=$(curl -s -o /dev/null -w "%{http_code}" http://${{ secrets.VPS_HOST }}:3000/health || echo "000")
+          # Vérifier santé HTTP (interne)
+          response_http=$(curl -s -o /dev/null -w "%{http_code}" http://${{ secrets.VPS_HOST }}:3000/health || echo "000")
 
-          if [ "$response" = "200" ]; then
-            echo "✅ Frontend déployé avec succès!"
-            echo "🌐 URL: http://${{ secrets.VPS_HOST }}:3000"
+          # Vérifier santé HTTPS publique (optionnel si cert actif)
+          response_https=$(curl -s -o /dev/null -w "%{http_code}" https://bassenge-pneus.com/health || echo "000")
+
+          echo "HTTP interne (3000) => $response_http"
+          echo "HTTPS public (bassenge-pneus.com) => $response_https"
+
+          if [ "$response_http" = "200" ]; then
+            echo "✅ Frontend OK sur 127.0.0.1:3000"
           else
-            echo "⚠️ Le frontend ne répond pas encore (HTTP $response)"
-            echo "Vérifiez les logs avec: docker logs garagepneu-frontend"
+            echo "⚠️ Frontend ne répond pas sur 3000 (HTTP $response_http)"
+          fi
+
+          if [ "$response_https" = "200" ]; then
+            echo "✅ HTTPS public OK: https://bassenge-pneus.com/health"
+          else
+            echo "ℹ️ HTTPS public non OK (HTTP $response_https). Si le cert vient d’être demandé, réessaie dans quelques minutes."
           fi
 
       - name: 🧹 Nettoyage SSH

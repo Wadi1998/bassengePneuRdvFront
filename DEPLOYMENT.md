@@ -1,337 +1,263 @@
-# 🚀 Guide de Déploiement - Bassenge Pneu RDV Frontend
-
-> **Serveur VPS Hostinger** : `72.62.182.169`  
-> **Port Frontend** : `3000`  
-> **Mode** : Déploiement automatique via GitHub Actions (CI/CD)
-
----
-
-## 📋 Résumé
-
-Tu dois faire **2 choses** :
-1. **Configurer le serveur UNE SEULE FOIS** (5-10 minutes) - ⚠️ Si déjà fait pour le backend, passer à l'étape 2
-2. **Configurer GitHub Secrets** (3 minutes)
-
-Ensuite, chaque `git push` déploie automatiquement ton application ! 🎉
-
----
-
-## 🌍 Architecture du Déploiement
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                    VPS Hostinger (72.62.182.169)                │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                 │
-│  ┌─────────────────┐    ┌─────────────────┐    ┌─────────────┐ │
-│  │   Frontend      │    │    Backend      │    │  Keycloak   │ │
-│  │   (Angular)     │    │ (Spring Boot)   │    │   (Auth)    │ │
-│  │   Port: 3000    │───▶│   Port: 8080    │◀───│ Port: 8180  │ │
-│  │                 │    │                 │    │             │ │
-│  └─────────────────┘    └─────────────────┘    └─────────────┘ │
-│          │                      │                     │        │
-│          └──────────────────────┴─────────────────────┘        │
-│                    Docker Network: garagepneu-network          │
-│                                                                 │
-└─────────────────────────────────────────────────────────────────┘
-```
-
-### URLs de l'application :
-
-| Service | URL |
-|---------|-----|
-| **Frontend** | http://72.62.182.169:3000 |
-| **API Backend** | http://72.62.182.169:8080/api |
-| **Swagger API** | http://72.62.182.169:8080/api/swagger-ui.html |
-| **Keycloak** | http://72.62.182.169:8180 |
-
----
-
-## 🖥️ ÉTAPE 1 : Configuration du Serveur (UNE SEULE FOIS)
-
-> ⚠️ **Si tu as déjà configuré le serveur pour le backend**, tu peux passer directement à l'**ÉTAPE 2**.
-
-### 1.1 Se connecter au serveur
-
-Ouvre un terminal et connecte-toi :
-
-```bash
-ssh root@72.62.182.169
-```
-
-### 1.2 Exécuter le script d'installation
-
-Ce script installe Docker et configure l'environnement :
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/Wadi1998/bassengePneuRdvFront/main/scripts/setup-server.sh | bash
-```
-
-⏳ **Attends environ 3-5 minutes** que le script se termine.
-
-### 1.3 Générer une clé SSH pour GitHub (si pas déjà fait)
-
-> ⚠️ **Si tu as déjà une clé SSH pour le backend**, tu peux réutiliser la même clé !
-
-Toujours sur le serveur, exécute ces commandes :
-
-```bash
-# Générer la clé (appuie sur Entrée pour tout accepter)
-ssh-keygen -t ed25519 -C 'github-actions' -f ~/.ssh/github_deploy -N ''
-
-# Autoriser cette clé
-cat ~/.ssh/github_deploy.pub >> ~/.ssh/authorized_keys
-
-# Afficher la clé PRIVÉE (tu vas la copier)
-cat ~/.ssh/github_deploy
-```
-
-📋 **IMPORTANT** : Copie TOUT le contenu affiché (de `-----BEGIN OPENSSH PRIVATE KEY-----` jusqu'à `-----END OPENSSH PRIVATE KEY-----`)
-
-Tu peux maintenant te déconnecter du serveur :
-```bash
-exit
-```
-
----
-
-## 🔐 ÉTAPE 2 : Configurer GitHub Secrets
-
-### 2.1 Aller dans les paramètres du repo
-
-1. Va sur ton repo GitHub : https://github.com/Wadi1998/bassengePneuRdvFront
-2. Clique sur **Settings** (⚙️)
-3. Dans le menu gauche, clique sur **Secrets and variables** → **Actions**
-4. Clique sur **New repository secret**
-
-### 2.2 Ajouter les secrets
-
-Ajoute chaque secret un par un :
-
-| Nom du Secret | Valeur à mettre |
-|---------------|-----------------|
-| `VPS_HOST` | `72.62.182.169` |
-| `VPS_USER` | `root` |
-| `VPS_SSH_KEY` | *(La clé privée SSH - celle du backend si déjà créée)* |
-
-> 💡 **Astuce** : Si tu as déjà configuré les secrets pour le repo backend, tu peux utiliser les mêmes valeurs !
-
----
-
-## 🚀 ÉTAPE 3 : Déployer
-
-### 3.1 Premier déploiement
-
-Sur ta machine locale, dans le dossier du projet :
-
-```bash
-git add .
-git commit -m "Premier déploiement frontend"
-git push origin main
-```
-
-### 3.2 Suivre le déploiement
-
-1. Va sur GitHub → **Actions** (onglet)
-2. Tu verras le workflow "🚀 CI/CD Deploy Frontend to VPS" en cours
-3. Attends qu'il soit vert ✅ (environ 3-5 minutes)
-
----
-
-## ✅ ÉTAPE 4 : Vérifier que tout fonctionne
-
-### 4.1 Tester le Frontend
-
-Ouvre dans ton navigateur :
-- **Application** : http://72.62.182.169:3000
-- **Health Check** : http://72.62.182.169:3000/health
-
-### 4.2 Vérifier la connexion au Backend
-
-1. Ouvre l'application : http://72.62.182.169:3000
-2. Essaie de te connecter via Keycloak
-3. Vérifie que les données s'affichent correctement
-
----
-
-## 🔧 ÉTAPE 5 : Configurer Keycloak pour le Frontend
-
-> ⚠️ **Important** : Pour que l'authentification fonctionne, tu dois configurer un client Keycloak pour le frontend.
-
-### 5.1 Accéder à Keycloak
-
-1. Ouvre : http://72.62.182.169:8180
-2. Connecte-toi avec le compte admin
-
-### 5.2 Créer le Client Frontend
-
-1. Sélectionne le realm `garage-realm`
-2. Menu gauche → **Clients** → **Create client**
-3. Configure :
-   - **Client ID** : `garagepneu-front`
-   - **Client authentication** : **OFF** (application publique)
-   - **Authorization** : **OFF**
-4. Clique **Next**
-
-### 5.3 Configurer les URLs
-
-Dans l'écran de configuration :
-
-| Champ | Valeur |
-|-------|--------|
-| Root URL | `http://72.62.182.169:3000` |
-| Home URL | `http://72.62.182.169:3000` |
-| Valid redirect URIs | `http://72.62.182.169:3000/*` |
-| Valid post logout redirect URIs | `http://72.62.182.169:3000/*` |
-| Web origins | `http://72.62.182.169:3000` |
-
-5. Clique **Save**
-
-### 5.4 Configurer CORS sur le Backend (si pas déjà fait)
-
-Dans les secrets du backend, assure-toi que `CORS_ALLOWED_ORIGINS` inclut :
-```
-http://72.62.182.169:3000,http://localhost:4200
-```
-
----
-
-## 🎉 C'est terminé !
-
-Ton application frontend est déployée et fonctionnelle !
-
-### Récapitulatif des URLs :
-
-| Service | URL |
-|---------|-----|
-| **Frontend** | http://72.62.182.169:3000 |
-| **Backend API** | http://72.62.182.169:8080/api |
-| **Swagger** | http://72.62.182.169:8080/api/swagger-ui.html |
-| **Keycloak** | http://72.62.182.169:8180 |
-
-### Prochains déploiements
-
-Pour chaque modification, il suffit de :
-
-```bash
-git add .
-git commit -m "ma modification"
-git push origin main
-```
-
-GitHub Actions s'occupe du reste ! 🚀
-
----
-
-## 🛠️ Commandes utiles (sur le serveur)
-
-```bash
-# Se connecter
-ssh root@72.62.182.169
-
-# Voir les logs du frontend
 docker logs -f garagepneu-frontend
-
-# Voir l'état des conteneurs
 docker ps
-
-# Redémarrer le frontend
 docker restart garagepneu-frontend
-
-# Arrêter le frontend
 docker stop garagepneu-frontend
-
-# Supprimer et reconstruire le frontend
 docker stop garagepneu-frontend
 docker rm garagepneu-frontend
 docker rmi garagepneu-frontend:latest
-cd ~/garagepneu-frontend
 docker build -t garagepneu-frontend:latest --build-arg BUILD_CONFIGURATION=staging .
 docker run -d --name garagepneu-frontend --network garagepneu-network -p 3000:80 --restart unless-stopped garagepneu-frontend:latest
-```
-
----
-
-## 📜 Scripts NPM disponibles
-
-```bash
-# Développement local
-npm start                 # Démarrer en mode développement (localhost:4200)
-npm run start:staging     # Démarrer avec config staging (pointe vers le VPS)
-npm run start:prod        # Démarrer avec config production
-
-# Build
-npm run build:dev         # Build de développement
-npm run build:staging     # Build de staging (pour le VPS)
-npm run build:prod        # Build de production optimisé
-
-# Tests et qualité
-npm run test              # Tests unitaires
-npm run lint              # Vérifier le code
-npm run lint:fix          # Corriger automatiquement le code
-```
-
----
-
-## ❓ FAQ / Problèmes courants
-
-### Le frontend ne charge pas
-
-```bash
-ssh root@72.62.182.169
 docker logs garagepneu-frontend --tail 50
-```
-
-### Erreur 404 sur les routes Angular
-
-Le fichier nginx est configuré pour gérer le routage SPA. Si le problème persiste :
-```bash
 docker exec -it garagepneu-frontend cat /etc/nginx/conf.d/default.conf
-```
+# 🚀 Déploiement Frontend (Angular) sur VPS Hostinger Debian + Nginx (prod)
 
-### Erreurs CORS
-
-1. Vérifie que Keycloak a la bonne **Web Origins** configurée
-2. Vérifie que le backend a `CORS_ALLOWED_ORIGINS` avec l'URL du frontend
-
-### Keycloak ne redirige pas correctement
-
-1. Vérifie les **Valid redirect URIs** dans Keycloak
-2. Assure-toi que l'URL correspond exactement : `http://72.62.182.169:3000/*`
-
-### Erreur de connexion SSH dans GitHub Actions
-
-Vérifie que :
-1. La clé `VPS_SSH_KEY` est complète (avec les lignes BEGIN et END)
-2. Le `VPS_HOST` est correct : `72.62.182.169`
-3. Le `VPS_USER` est `root`
-
-### Le build échoue
-
-Vérifie les logs dans GitHub Actions → onglet **Actions** → clique sur le workflow en échec.
+> **Serveur VPS** : `72.62.182.169`  
+> **Exposition publique** : via Nginx reverse proxy (`80/443`)  
+> **Conteneur frontend** : écoute en loopback `127.0.0.1:3000` (non exposé sur Internet)  
+> **CI/CD** : GitHub Actions (push sur `main` ou `staging`)
 
 ---
 
-## 🔄 Développement Local
+## 📌 Ce qu'on va faire
 
-Pour développer en local tout en utilisant le backend sur le VPS :
+1) Vérifier/installer la stack (Docker, Nginx, UFW, Fail2Ban, Certbot)  
+2) Poser la conf Nginx reverse proxy pour le frontend  
+3) Mettre/valider les secrets GitHub Actions  
+4) Lancer le premier déploiement auto  
+5) Vérifier, activer HTTPS quand tu auras un domaine  
+6) Configurer Keycloak côté front
 
-```bash
-# Démarrer avec la config staging (API sur le VPS)
-npm run start:staging
+---
+
+## 🌍 Schéma rapide
+
+```
+Internet ──▶ Nginx (ports 80/443) ──▶ 127.0.0.1:3000 (container Angular)
+                                 └─▶ 127.0.0.1:8080 (backend via autre host conf)
 ```
 
-Puis ouvre : http://localhost:4200
+Le conteneur frontend n'est accessible que depuis l'hôte (loopback). Seul Nginx publie le service.
+
+---
+
+## 🛠️ Étape 0 — Pré-requis
+
+- Accès root SSH : `ssh root@72.62.182.169`
+- Docker déjà installé ? (sinon voir script backend).  
+- Si le backend a déjà posé Docker/Nginx/UFW/Fail2Ban/Certbot, on réutilise. On ajoute juste le vhost front.
+
+Commandes de contrôle (sur le VPS) :
+
+```bash
+docker --version
+nginx -t
+ufw status
+systemctl status fail2ban --no-pager
+```
+
+Si Nginx n'est pas présent (cas rare si backend pas fait) :
+
+```bash
+apt update && apt install -y nginx certbot python3-certbot-nginx
+systemctl enable nginx --now
+```
+
+---
+
+## 🧱 Étape 1 — Conf Nginx reverse proxy (prod)
+
+Objectif : publier `http://72.62.182.169/` (et plus tard `https://ton-domaine`) vers le conteneur front sur `127.0.0.1:3000`.
+
+1) Créer le vhost (domaine `bassenge-pneus.com`) :
+
+```bash
+cat >/etc/nginx/sites-available/garagepneu-frontend <<'EOF'
+server {
+    listen 80;
+    listen [::]:80;
+    server_name bassenge-pneus.com www.bassenge-pneus.com;
+
+    # Sécurité de base
+    add_header X-Frame-Options "SAMEORIGIN" always;
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header X-XSS-Protection "1; mode=block" always;
+    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+
+    # Proxy vers le conteneur front (loopback seulement)
+    location / {
+        proxy_pass http://127.0.0.1:3000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_read_timeout 60s;
+    }
+
+    # Healthcheck simple
+    location /health {
+        proxy_pass http://127.0.0.1:3000/health;
+        access_log off;
+    }
+
+    # Cache statique (optionnel côté reverse proxy)
+    location ~* \.(js|css|ico|gif|jpe?g|png|svg|webp|woff2?|ttf|eot|otf)$ {
+        expires 7d;
+        add_header Cache-Control "public";
+        proxy_pass http://127.0.0.1:3000;
+    }
+}
+EOF
+
+ln -sf /etc/nginx/sites-available/garagepneu-frontend /etc/nginx/sites-enabled/garagepneu-frontend
+rm -f /etc/nginx/sites-enabled/default
+nginx -t && systemctl reload nginx
+```
+
+2) DNS : crée un enregistrement **A** pour `bassenge-pneus.com` (et `www`) pointant vers `72.62.182.169`.
+
+3) UFW (si pas déjà fait) :
+
+```bash
+ufw allow 80/tcp
+ufw allow 443/tcp
+ufw allow 22/tcp
+ufw reload
+```
+
+4) HTTPS (avec le domaine qui pointe déjà sur le VPS) :
+
+```bash
+certbot --nginx -d bassenge-pneus.com -d www.bassenge-pneus.com
+```
+
+---
+
+## 🔐 Étape 2 — Secrets GitHub Actions (repo front)
+
+Dans GitHub → Settings → Secrets and variables → Actions, ajoute :
+
+| Nom | Valeur |
+| --- | --- |
+| `VPS_HOST` | `72.62.182.169` |
+| `VPS_USER` | `root` |
+| `VPS_SSH_KEY` | Clé privée SSH (celle déjà générée pour le backend) |
+
+> Ne commit jamais la clé. Elle vit uniquement dans les secrets.
+
+---
+
+## 🚀 Étape 3 — Déploiement automatique
+
+1) Sur ta machine locale :
+
+```bash
+git add .
+git commit -m "feat: premier déploiement front"
+git push origin main   # ou staging
+```
+
+2) Sur GitHub → onglet **Actions**, lance/observe le workflow `🚀 CI/CD Deploy Frontend to VPS`.
+
+Ce que fait le workflow :
+- Build Angular (staging config) → image Docker.  
+- Push des sources par rsync sur le VPS.  
+- Build image Docker sur le VPS et run sur `127.0.0.1:3000`.  
+- Le conteneur est sur le réseau Docker `garagepneu-network` et redémarre automatiquement.
+
+---
+
+## ✅ Étape 4 — Vérifications rapides
+
+- Front via Nginx : http://72.62.182.169/ (ou ton domaine)  
+- Health front : http://72.62.182.169/health  
+- Logs front : `docker logs -f garagepneu-frontend`  
+- Statut conteneur : `docker ps | grep garagepneu-frontend`
+
+Si tu as un domaine et du HTTPS, teste aussi `https://ton-domaine/`.
+
+---
+
+## 🔑 Étape 5 — Keycloak (client front)
+
+Dans Keycloak (realm `garage-realm`) :
+
+1. **Clients** → **Create client**  
+   - Client ID : `garagepneu-front`  
+   - Public client (Client authentication = OFF)  
+2. Onglet **Access settings** :
+   - Root URL : `http://72.62.182.169` (ou `https://ton-domaine`)  
+   - Home URL : idem  
+   - Valid redirect URIs : `http://72.62.182.169/*` (ajoute la version https si domaine)  
+   - Web origins : `*` ou mieux l'URL exacte (`http://72.62.182.169` + ton domaine en https)  
+3. Sauvegarde.
+
+Backend (déjà côté repo back) : assure `CORS_ALLOWED_ORIGINS` inclut l'URL front (`http://72.62.182.169` et ton domaine https).
+
+---
+
+## 🔒 Sécurité / Hardening rapide
+
+- Conteneur front seulement en loopback (`127.0.0.1:3000`) → déjà géré dans le workflow.  
+- Nginx publie en 80/443, protège via UFW.  
+- Fail2Ban actif sur SSH (voir backend script).  
+- Quand domaine dispo : active HTTPS via Certbot.  
+- Logs : `/var/log/nginx/` et `docker logs -f garagepneu-frontend`. Purge régulière (logrotate fait le job pour Nginx, `docker image prune -f` tourne en fin de workflow).
+
+---
+
+## 🛠️ Commandes utiles (VPS)
+
+```bash
+# Connexion SSH
+ssh root@72.62.182.169
+
+# Nginx
+nginx -t && systemctl reload nginx
+
+6) (Option pro) Bloquer l’accès direct HTTP/HTTPS par IP (autoriser seulement le domaine) — à activer si tu veux forcer le host :
+
+```bash
+cat >/etc/nginx/snippets/deny-by-host.conf <<'EOF'
+if ($host !~* ^(bassenge-pneus\.com|www\.bassenge-pneus\.com)$) {
+    return 444;
+}
+EOF
+
+# Puis inclure ce snippet dans les deux blocs server (80 et 443) juste après server_name :
+#   include /etc/nginx/snippets/deny-by-host.conf;
+
+nginx -t && systemctl reload nginx
+```
+
+# Conteneur front
+docker logs -f garagepneu-frontend
+docker restart garagepneu-frontend
+docker ps
+
+# Reconstruire manuellement (optionnel)
+cd ~/garagepneu-frontend
+docker build -t garagepneu-frontend:latest --build-arg BUILD_CONFIGURATION=staging .
+docker stop garagepneu-frontend && docker rm garagepneu-frontend || true
+docker run -d --name garagepneu-frontend --network garagepneu-network -p 127.0.0.1:3000:80 --restart unless-stopped garagepneu-frontend:latest
+```
+
+---
+
+## 🔄 Dév local rapide
+
+```bash
+npm run start:staging   # front local sur 4200, API sur le VPS
+```
 
 ---
 
 ## 📞 Support
 
-En cas de problème :
-1. Vérifie les logs Docker sur le serveur
-2. Vérifie l'onglet **Actions** sur GitHub pour voir les erreurs de déploiement
-3. Consulte la documentation Angular : https://angular.io/guide/deployment
+1) GitHub Actions → logs du workflow  
+2) `docker logs -f garagepneu-frontend`  
+3) `nginx -t` puis `systemctl reload nginx` si tu modifies la conf  
+4) Pour HTTPS : `certbot --nginx -d ton-domaine`
 
 ---
 
-*Guide créé le 25 janvier 2026*
+*Guide mis à jour le 27 janvier 2026*
