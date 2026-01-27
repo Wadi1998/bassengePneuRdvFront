@@ -10,8 +10,8 @@ export const environment = {
   production: true,
   envName: 'production',
 
-  // Configuration de l'API Backend
-  apiBase: 'https://api.bassenge-pneus.com',
+  // Configuration de l'API Backend (reverse proxy /api sur le domaine)
+  apiBase: 'https://bassenge-pneus.com/api',
   apiTimeout: 30000, // 30 secondes
 
   // Configuration Keycloak (Authentification)
