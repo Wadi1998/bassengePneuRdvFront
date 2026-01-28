@@ -1,41 +1,12 @@
-import { CanActivateFn } from '@angular/router';
+import { CanActivateFn, Router } from '@angular/router';
+import { inject } from '@angular/core';
 
 export const loginGuard: CanActivateFn = (route, state) => {
+  const router = inject(Router);
+
   if (localStorage.getItem('isLoggedIn') === 'true') {
     return true;
   }
-  window.location.href = '/login';
-  return false;
+
+  return router.parseUrl('/login');
 };
-import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
-
-@Component({
-  selector: 'app-login',
-  standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
-  templateUrl: './login.component.html'
-})
-export class LoginComponent {
-  form: FormGroup;
-  error: string | null = null;
-
-  constructor(private fb: FormBuilder, private router: Router) {
-    this.form = this.fb.group({
-      username: ['', Validators.required],
-      password: ['', Validators.required]
-    });
-  }
-
-  login() {
-    const { username, password } = this.form.value;
-    if (username === 'admin' && password === 'admin') {
-      localStorage.setItem('isLoggedIn', 'true');
-      this.router.navigate(['/dashboard']);
-    } else {
-      this.error = 'Identifiants invalides';
-    }
-  }
-}

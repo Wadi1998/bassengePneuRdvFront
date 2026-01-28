@@ -1,13 +1,11 @@
 ﻿<!-- App Shell -->
 <div class="min-h-screen flex bg-brand-dark text-slate-100">
   <!-- SIDEBAR -->
-  <aside *ngIf="isLoggedIn" class="hidden md:flex md:flex-col md:w-72
+  <aside *ngIf="isLoggedIn()" class="hidden md:flex md:flex-col md:w-72
                 bg-gradient-to-b from-brand-mid to-brand-dark border-r border-white/10">
     <!-- Logo -->
-    <div class="h-16 flex items-center px-5 border-b border-white/10">
-      <div class="flex items-center gap-3">
-        <span class="text-xl font-extrabold tracking-tight uppercase">{{ i18n.t('app.title') }}</span>
-      </div>
+    <div class="h-16 flex items-center justify-center px-5 border-b border-white/10">
+      <img src="assets/logo.png" class="h-10 w-auto" alt="Logo">
     </div>
 
     <!-- Nav -->
@@ -19,7 +17,7 @@
         <span>{{ i18n.t('nav.home') }}</span>
       </a>
 
-      <a routerLink="/prise-rendez-vous" routerLinkActive="nav-link-active" class="nav-link">
+      <a routerLink="/gestion-rendez-vous" routerLinkActive="nav-link-active" class="nav-link">
         <svg class="h-5 w-5 opacity-80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
           <rect x="3" y="5" width="18" height="16" rx="2" />
           <path d="M16 3v4M8 3v4M3 11h18" />
@@ -38,8 +36,9 @@
     </nav>
 
 
-    <div class="px-4 py-3 border-t border-white/10 text-xs text-slate-400">
-      {{ i18n.t('app.footerBy', { year: (today | date:'yyyy') }) }}
+    <div class="px-4 py-3 border-t border-white/10 text-xs text-slate-400 space-y-1">
+      <div>{{ i18n.t('app.footerBy', { year: (today | date:'yyyy') }) }}</div>
+      <div class="text-slate-500">v{{ version }}</div>
     </div>
   </aside>
 
@@ -49,28 +48,41 @@
       <!-- TOPBAR -->
       <header class="h-16 bg-brand-mid/60 backdrop-blur border-b border-white/10
                      flex items-center px-4 md:px-6 gap-3">
-        <button *ngIf="isLoggedIn" class="md:hidden inline-flex items-center justify-center h-10 w-10 rounded-xl border border-white/10"
+        <button *ngIf="isLoggedIn()" class="md:hidden inline-flex items-center justify-center h-10 w-10 rounded-xl border border-white/10"
                 (click)="open = !open" aria-label="{{ i18n.t('app.menuAria') }}">
           <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.6">
             <path d="M4 6h16M4 12h16M4 18h16" />
           </svg>
         </button>
 
-        <div class="font-semibold">{{ i18n.t('app.garage') }}</div>
+        <div class="flex items-center gap-2">
+          <img src="assets/logo.png" class="h-8 w-auto md:hidden" alt="Logo">
+        </div>
 
-        <div class="ml-auto hidden sm:flex items-center gap-3 text-sm text-slate-300">
-          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
-            <path d="M3 12a9 9 0 1 0 18 0 9 9 0 0 0-18 0Z" />
-            <path d="M12 7v5l3 3" />
-          </svg>
-          <span>{{ today | date }}</span>
+        <div class="ml-auto hidden sm:flex items-center gap-4 text-sm text-slate-300">
+          <div class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10">
+            <svg class="h-4 w-4 text-sky-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+              <path d="M3 12a9 9 0 1 0 18 0 9 9 0 0 0-18 0Z" />
+              <path d="M12 7v5l3 3" />
+            </svg>
+            <span>{{ today | date:'fullDate' }}</span>
+          </div>
 
-          <select aria-label="Language" (change)="i18n.setLang($any($event.target).value)" class="ml-4 bg-transparent text-slate-300">
-            <option value="fr" [selected]="i18n.currentLang === 'fr'">FR</option>
-            <option value="en" [selected]="i18n.currentLang === 'en'">EN</option>
+          <select aria-label="Language" (change)="i18n.setLang($any($event.target).value)"
+                  class="px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-slate-300 cursor-pointer hover:bg-white/10 transition">
+            <option value="fr" [selected]="i18n.currentLang === 'fr'">🇧🇪 FR</option>
+            <option value="en" [selected]="i18n.currentLang === 'en'">🇬🇧 EN</option>
           </select>
 
-          <button *ngIf="isLoggedIn" (click)="logout()" class="btn-primary text-xs px-3 py-1 ml-4">Déconnexion</button>
+          <button *ngIf="isLoggedIn()" (click)="logout()"
+                  class="flex items-center gap-2 px-4 py-2 rounded-lg bg-rose-500/10 border border-rose-500/30 text-rose-300 hover:bg-rose-500/20 transition text-sm font-medium">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+              <polyline points="16 17 21 12 16 7"/>
+              <line x1="21" y1="12" x2="9" y2="12"/>
+            </svg>
+            {{ i18n.t('common.logout') || 'Déconnexion' }}
+          </button>
         </div>
       </header>
 
@@ -84,28 +96,65 @@
   <!-- Drawer mobile -->
   <div class="md:hidden fixed inset-0 z-40" *ngIf="open">
     <div class="absolute inset-0 bg-black/50" (click)="open=false"></div>
-    <div class="absolute inset-y-0 left-0 w-72 bg-brand-mid text-slate-100 p-4">
-      <div class="flex items-center justify-between mb-4">
-        <div class="flex items-center gap-2">
-          <img src="assets/logo-bassengepneu.png" class="h-8 w-auto" alt="">
-          <div class="font-semibold">{{ i18n.t('app.brandShort') }}</div>
-        </div>
-        <button (click)="open=false" class="h-9 w-9 rounded-lg bg-white/10 flex items-center justify-center">
+    <div class="absolute inset-y-0 left-0 w-80 bg-gradient-to-b from-brand-mid to-brand-dark text-slate-100 flex flex-col shadow-2xl">
+      <!-- Header du drawer -->
+      <div class="flex items-center justify-between p-4 border-b border-white/10">
+        <img src="assets/logo.png" class="h-10 w-auto" alt="Logo">
+        <button (click)="open=false" class="h-10 w-10 rounded-lg bg-white/10 flex items-center justify-center hover:bg-white/20 transition">
           <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.6">
             <path d="M6 6l12 12M6 18L18 6" />
           </svg>
         </button>
       </div>
-      <nav class="space-y-1">
-        <a routerLink="/dashboard" routerLinkActive="nav-link-active" (click)="open=false" class="nav-link">{{ i18n.t('nav.home') }}</a>
-        <a routerLink="/prise-rendez-vous" routerLinkActive="nav-link-active" (click)="open=false" class="nav-link">{{ i18n.t('nav.booking') }}</a>
-        <a routerLink="/clients" routerLinkActive="nav-link-active" (click)="open=false" class="nav-link">{{ i18n.t('nav.clients') }}</a>
+
+      <!-- Navigation -->
+      <nav class="flex-1 px-3 py-4 space-y-1">
+        <a routerLink="/dashboard" routerLinkActive="nav-link-active" (click)="open=false" class="nav-link">
+          <svg class="h-5 w-5 opacity-80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+            <path d="M3 12l9-9 9 9" /><path d="M9 21V9h6v12" />
+          </svg>
+          <span>{{ i18n.t('nav.home') }}</span>
+        </a>
+        <a routerLink="/gestion-rendez-vous" routerLinkActive="nav-link-active" (click)="open=false" class="nav-link">
+          <svg class="h-5 w-5 opacity-80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+            <rect x="3" y="5" width="18" height="16" rx="2" />
+            <path d="M16 3v4M8 3v4M3 11h18" />
+          </svg>
+          <span>{{ i18n.t('nav.booking') }}</span>
+        </a>
+        <a routerLink="/clients" routerLinkActive="nav-link-active" (click)="open=false" class="nav-link">
+          <svg class="h-5 w-5 opacity-80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+            <path d="M16 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+            <circle cx="8" cy="7" r="4" />
+            <path d="M20 8v6m3-3h-6" />
+          </svg>
+          <span>{{ i18n.t('nav.clients') }}</span>
+        </a>
       </nav>
 
-      <div class="mt-4">
-        <a href="tel:+32484619867" class="btn-cta w-full justify-center">
-          <span>📞</span><span>{{ i18n.t('phone.number') }}</span>
+      <!-- Actions du bas -->
+      <div class="p-4 space-y-3 border-t border-white/10">
+        <a href="tel:+32484619867" class="flex items-center gap-3 px-4 py-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/20 transition font-medium">
+          <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+          </svg>
+          <span>{{ i18n.t('phone.number') }}</span>
         </a>
+
+        <button *ngIf="isLoggedIn()" (click)="logout()"
+                class="flex items-center gap-3 px-4 py-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 hover:bg-rose-500/20 transition font-medium w-full">
+          <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+            <polyline points="16 17 21 12 16 7"/>
+            <line x1="21" y1="12" x2="9" y2="12"/>
+          </svg>
+          <span>{{ i18n.t('common.logout') || 'Déconnexion' }}</span>
+        </button>
+
+        <div class="text-xs text-slate-400 text-center pt-2 space-y-1">
+          <div>{{ i18n.t('app.footerBy', { year: (today | date:'yyyy') }) }}</div>
+          <div class="text-slate-500">v{{ version }}</div>
+        </div>
       </div>
     </div>
   </div>

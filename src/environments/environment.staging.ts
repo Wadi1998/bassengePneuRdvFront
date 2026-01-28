@@ -1,33 +1,33 @@
 /**
- * Configuration de l'environnement de PRODUCTION
- * Ce fichier remplace environment.ts lors de `ng build --configuration=production`
+ * Configuration de l'environnement de STAGING / VPS HOSTINGER
+ * Ce fichier remplace environment.ts lors de `ng build --configuration=staging`
  *
- * Déploiement sur Hostinger - Domaine: bassenge-pneus.com
+ * Déploiement sur VPS Hostinger - IP: 72.62.182.169
  */
 
 export const environment = {
   // Mode de l'application
   production: true,
-  envName: 'production',
+  envName: 'staging',
 
-  // Configuration de l'API Backend (reverse proxy /api sur le domaine)
-  apiBase: 'https://bassenge-pneus.com/api',
+  // Configuration de l'API Backend (sur le même serveur VPS)
+  apiBase: 'http://72.62.182.169:8080',
   apiTimeout: 30000, // 30 secondes
 
   // Configuration Keycloak (Authentification)
   keycloak: {
-    url: 'https://bassenge-pneus.com/auth',
+    url: 'http://72.62.182.169:8180',
     realm: 'garage-realm',
     clientId: 'garagepneu-front',
     // Options SSO
     silentCheckSsoRedirectUri: '/assets/silent-check-sso.html',
     checkLoginIframe: false,
-    enableLogging: false // Désactivé en production
+    enableLogging: true // Activé pour le staging pour le debug
   },
 
   // Configuration de l'application
   app: {
-    name: 'Bassenge Pneu - RDV',
+    name: 'Bassenge Pneu - RDV (Staging)',
     version: '1.0.0',
     defaultLanguage: 'fr',
     supportedLanguages: ['fr', 'nl', 'en']
@@ -35,13 +35,13 @@ export const environment = {
 
   // Configuration des logs
   logging: {
-    level: 'error', // Seulement les erreurs en production
-    enableConsole: false // Désactivé en production pour la performance
+    level: 'debug', // Debug en staging pour diagnostiquer les problèmes
+    enableConsole: true
   },
 
   // Configuration des fonctionnalités (Feature Flags)
   features: {
-    enableAnalytics: true, // Activé en production
+    enableAnalytics: false, // Désactivé en staging
     enableNotifications: true,
     enableMaintenanceMode: false
   }

@@ -1,32 +1,29 @@
-import { Component } from '@angular/core';
+/**
+ * @file Login Component
+ * @description Page de connexion avec redirection vers Keycloak.
+ */
+
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { KeycloakService } from '../../services/keycloak.service';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule],
   templateUrl: './login.component.html'
 })
 export class LoginComponent {
-  form: FormGroup;
-  error: string | null = null;
+  private readonly keycloakService = inject(KeycloakService);
 
-  constructor(private fb: FormBuilder, private router: Router) {
-    this.form = this.fb.group({
-      username: ['', Validators.required],
-      password: ['', Validators.required]
-    });
-  }
+  currentYear = new Date().getFullYear();
+  isLoading = false;
 
-  login() {
-    const { username, password } = this.form.value;
-    if (username === 'admin' && password === 'admin') {
-      localStorage.setItem('isLoggedIn', 'true');
-      this.router.navigate(['/dashboard']);
-    } else {
-      this.error = 'Identifiants invalides';
-    }
+  /**
+   * Redirige vers la page de connexion Keycloak
+   */
+  async login(): Promise<void> {
+    this.isLoading = true;
+    await this.keycloakService.login();
   }
 }

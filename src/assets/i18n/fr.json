@@ -1,14 +1,14 @@
 {
   "app": {
-    "title": "Bassenge Pneu",
-    "brandShort": "BassengePneu",
-    "garage": "Garage Pneu",
+    "title": "Bassenge Pneus",
+    "brandShort": "Bassenge Pneus",
+    "garage": "Bassenge Pneus",
     "footerBy": "© {year} • Wadie Mokhtari",
     "menuAria": "Menu"
   },
   "nav": {
-    "home": "Accueil",
-    "booking": "Prise-rendez-vous",
+    "home": "Calendrier",
+    "booking": "Gestion rendez-vous",
     "clients": "Clients"
   },
   "phone": {
@@ -20,13 +20,24 @@
     "free": "Libre",
     "busy": "Occupé",
     "indispo": "Indispo",
-    "unknownClient": "Client inconnu"
+    "unknownClient": "Client inconnu",
+    "loading": "Chargement...",
+    "close": "Fermer",
+    "confirm": "Confirmer",
+    "logout": "Déconnexion",
+    "min": "min"
   },
   "dashboard": {
-    "title": "Calendrier",
+    "title": "Calendrier du jour",
+    "subtitle": "Vue d'ensemble de vos rendez-vous",
     "defaultDurationNote": "durée par défaut 30 min",
-    "slotsA": "Pont (A)",
-    "slotsB": "Pont (B)",
+    "slotsA": "Pont A",
+    "slotsB": "Pont B",
+    "readOnlyMode": "Consultation uniquement",
+    "viewOnly": "Lecture seule",
+    "appointmentCount": "{count} rendez-vous",
+    "noAppointments": "Aucun rendez-vous",
+    "addAppointment": "Nouveau RDV",
     "exportPdf": "Exporter en PDF",
     "exportTitle": "Liste des rendez-vous",
     "exportNoAppointments": "Aucun rendez-vous pour la période sélectionnée.",
@@ -43,7 +54,7 @@
     "chooseService": "Choisir un type de service",
     "chooseClient": "Choisir un client",
     "reservePrefix": "Réserver — ",
-    "notEnoughSpace": "Pas assez d'\u00e9space pour {duration} min",
+    "notEnoughSpace": "Pas assez d'espace pour {duration} min",
     "sep": "—"
   },
   "clients": {
@@ -53,15 +64,19 @@
     "firstnamePlaceholder": "Prénom *",
     "namePlaceholder": "Nom *",
     "phonePlaceholder": "Téléphone (BE) *",
-    "vehiclePlaceholder": "Véhicule (ex: Golf 7) *",
-    "platePlaceholder": "Plaque *",
+    "brandPlaceholder": "Marque",
+    "modelPlaceholder": "Modèle",
+    "yearPlaceholder": "Année",
+    "platePlaceholder": "Plaque",
     "emailPlaceholder": "Adresse e-mail",
-    "searchPlaceholder": "Rechercher (nom, prénom, téléphone, véhicule)",
+    "optionalVehicle": "Véhicule (optionnel)",
+    "searchPlaceholder": "Rechercher (nom, prénom, téléphone)",
     "firstNameRequired": "Le prénom est obligatoire.",
     "nameRequired": "Le nom est obligatoire.",
     "phoneInvalid": "Numéro belge invalide (ex. 0470 12 34 56 ou 02 123 45 67).",
-    "vehicleRequired": "Le véhicule est obligatoire.",
-    "plateRequired": "La plaque d'immatriculation est obligatoire.",
+    "phoneRequired": "Le téléphone est obligatoire.",
+    "brandRequired": "La marque est obligatoire.",
+    "modelRequired": "Le modèle est obligatoire.",
     "addButton": "Ajouter",
     "editButton": "Modifier",
     "removeButton": "Supprimer",
@@ -72,30 +87,75 @@
     "cancel": "Annuler",
     "paginationPrev": "Précédent",
     "paginationNext": "Suivant",
-    "pageOf": "Page {page} / {total}"
+    "pageOf": "Page {page} / {total}",
+    "carsTitle": "Voitures du client",
+    "addCar": "Ajouter une voiture",
+    "editCar": "Modifier la voiture",
+    "noCars": "Aucune voiture enregistrée",
+    "confirmDelete": "Êtes-vous sûr de vouloir supprimer",
+    "confirmDeleteCar": "Voulez-vous vraiment supprimer cette voiture ?",
+    "deleteCar": "Supprimer la voiture",
+    "clientCreated": "Client créé avec succès",
+    "clientUpdated": "Client mis à jour",
+    "clientDeleted": "Client supprimé",
+    "clientCreatedButNoCar": "Client créé mais voiture non ajoutée",
+    "carAdded": "Voiture ajoutée",
+    "carUpdated": "Voiture modifiée",
+    "carDeleted": "Voiture supprimée"
   },
   "actions": {
     "addClientIcon": "👤+"
   },
   "errors": {
-    "loadAppointments": "Impossible de charger les rendez-vous."
+    "loadAppointments": "Impossible de charger les rendez-vous.",
+    "loadClients": "Impossible de charger les clients.",
+    "createClient": "Impossible de créer le client.",
+    "updateClient": "Impossible de mettre à jour le client.",
+    "deleteClient": "Impossible de supprimer le client.",
+    "addCar": "Erreur lors de l'ajout de la voiture.",
+    "updateCar": "Erreur lors de la modification de la voiture.",
+    "deleteCar": "Erreur lors de la suppression de la voiture."
   },
   "appointments": {
+    "title": "Gestion des rendez-vous",
+    "subtitle": "Planifiez et gérez vos rendez-vous",
     "selectClientPlaceholder": "— Sélectionner un client —",
     "searchClientPlaceholder": "Rechercher un client...",
-    "servicePlaceholder": "Type de service (obligatoire)",
-    "serviceRequired": "Saisis un type de service avant de réserver.",
+    "servicePlaceholder": "Service...",
+    "serviceRequired": "Choisis un type de service avant de réserver.",
+    "commonServices": "Services courants",
+    "services": {
+      "changementPneus": "Changement pneus",
+      "equilibrage": "Équilibrage",
+      "parallelisme": "Parallélisme",
+      "reparation": "Réparation pneu",
+      "permutation": "Permutation pneus",
+      "controle": "Contrôle / Vérification",
+      "stockage": "Stockage pneus",
+      "custom": "Autre..."
+    },
+    "today": "Aujourd'hui",
     "prevDay": "Jour -1",
     "nextDay": "Jour +1",
     "changeClient": "Changer",
     "slotNote": "Pas de 15 min — durée {duration} min",
+    "deleteAppointment": "Supprimer le rendez-vous",
+    "confirmDelete": "Voulez-vous vraiment supprimer ce rendez-vous ?",
+    "selectCar": "Choisir une voiture",
+    "clientCars": "Voitures du client",
+    "noCars": "Aucune voiture enregistrée",
+    "newClient": "Nouveau client",
     "toasts": {
       "chooseClientBefore": "Choisis un client avant de réserver.",
+      "chooseCarBefore": "Choisis une voiture avant de réserver.",
       "serviceRequired": "Saisis un type de service avant de réserver.",
       "bothRequired": "Choisis un client et un type de service avant de réserver.",
       "booked": "Réservé à {time} sur pont {bay}",
       "bookedTitle": "Rendez-vous créé",
-      "bookError": "Impossible de créer le rendez-vous."
+      "bookError": "Impossible de créer le rendez-vous.",
+      "deleted": "Rendez-vous supprimé avec succès",
+      "deletedTitle": "Suppression",
+      "deleteError": "Impossible de supprimer le rendez-vous."
     }
   }
 }

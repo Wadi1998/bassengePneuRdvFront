@@ -1,7 +1,7 @@
-﻿/**
- * @file Clients Service
- * @description Service pour la gestion des clients via l'API REST.
- * @module services/clients
+/**
+ * @file Cars Service
+ * @description Service pour la gestion des véhicules via l'API REST.
+ * @module services/cars
  */
 
 import { Injectable, inject } from '@angular/core';
@@ -9,26 +9,26 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 import { environment } from '../../environments/environment';
-import { Client, ClientRequest, ClientResponse, PageResponse } from '../models';
+import { Car, CarRequest, CarResponse } from '../models';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Service
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
- * Service de gestion des clients.
- * Fournit les opérations CRUD et la recherche paginée.
+ * Service de gestion des véhicules.
+ * Fournit les opérations CRUD pour les voitures des clients.
  *
  * @example
- * const clients$ = clientsService.listPaged(1, 20);
- * const client$ = clientsService.getById(123);
+ * const cars$ = carsService.getByClientId(123);
+ * const car$ = carsService.create({ clientId: 1, brand: 'Peugeot', model: '208' });
  */
 @Injectable({ providedIn: 'root' })
-export class ClientsService {
+export class CarsService {
   // ═══════════════════════════════════════════════════════════════════════════
   // Configuration
   // ═══════════════════════════════════════════════════════════════════════════
-  private readonly baseUrl = `${environment.apiBase}/api/clients`;
+  private readonly baseUrl = `${environment.apiBase}/api/cars`;
   private readonly http = inject(HttpClient);
 
   // ═══════════════════════════════════════════════════════════════════════════
@@ -36,43 +36,29 @@ export class ClientsService {
   // ═══════════════════════════════════════════════════════════════════════════
 
   /**
-   * Récupère tous les clients (sans pagination).
-   * @returns Observable de la liste complète des clients
+   * Récupère toutes les voitures.
+   * @returns Observable de la liste complète des voitures
    */
-  list(): Observable<ClientResponse[]> {
-    return this.http.get<ClientResponse[]>(this.baseUrl);
+  list(): Observable<CarResponse[]> {
+    return this.http.get<CarResponse[]>(this.baseUrl);
   }
 
   /**
-   * Récupère les clients avec pagination.
-   * @param page Numéro de la page (commence à 1)
-   * @param pageSize Nombre d'éléments par page
-   * @returns Observable de la réponse paginée
+   * Récupère une voiture par son ID.
+   * @param id Identifiant de la voiture
+   * @returns Observable de la voiture
    */
-  listPaged(page: number, pageSize: number): Observable<PageResponse<ClientResponse>> {
-    const params = { page: page.toString(), pageSize: pageSize.toString() };
-    return this.http.get<PageResponse<ClientResponse>>(this.baseUrl, { params });
+  getById(id: number): Observable<CarResponse> {
+    return this.http.get<CarResponse>(`${this.baseUrl}/${id}`);
   }
 
   /**
-   * Recherche des clients par nom ou téléphone avec pagination.
-   * @param query Terme de recherche
-   * @param page Numéro de la page
-   * @param pageSize Nombre d'éléments par page
-   * @returns Observable de la réponse paginée filtrée
+   * Récupère les voitures d'un client.
+   * @param clientId Identifiant du client propriétaire
+   * @returns Observable de la liste des voitures du client
    */
-  listFiltered(query: string, page: number, pageSize: number): Observable<PageResponse<ClientResponse>> {
-    const params = { query, page: page.toString(), pageSize: pageSize.toString() };
-    return this.http.get<PageResponse<ClientResponse>>(`${this.baseUrl}/search`, { params });
-  }
-
-  /**
-   * Récupère un client par son ID.
-   * @param id Identifiant du client
-   * @returns Observable du client
-   */
-  getById(id: number): Observable<ClientResponse> {
-    return this.http.get<ClientResponse>(`${this.baseUrl}/${id}`);
+  getByClientId(clientId: number): Observable<CarResponse[]> {
+    return this.http.get<CarResponse[]>(`${this.baseUrl}/client/${clientId}`);
   }
 
   // ═══════════════════════════════════════════════════════════════════════════
@@ -80,27 +66,27 @@ export class ClientsService {
   // ═══════════════════════════════════════════════════════════════════════════
 
   /**
-   * Crée un nouveau client.
-   * @param dto Données du client à créer
-   * @returns Observable du client créé
+   * Crée une nouvelle voiture.
+   * @param dto Données de la voiture à créer
+   * @returns Observable de la voiture créée
    */
-  create(dto: ClientRequest): Observable<Client> {
-    return this.http.post<Client>(this.baseUrl, dto);
+  create(dto: CarRequest): Observable<Car> {
+    return this.http.post<Car>(this.baseUrl, dto);
   }
 
   /**
-   * Met à jour un client existant.
-   * @param id Identifiant du client
+   * Met à jour une voiture existante.
+   * @param id Identifiant de la voiture
    * @param dto Données mises à jour
-   * @returns Observable du client modifié
+   * @returns Observable de la voiture modifiée
    */
-  update(id: number, dto: ClientRequest): Observable<Client> {
-    return this.http.put<Client>(`${this.baseUrl}/${id}`, dto);
+  update(id: number, dto: CarRequest): Observable<Car> {
+    return this.http.put<Car>(`${this.baseUrl}/${id}`, dto);
   }
 
   /**
-   * Supprime un client.
-   * @param id Identifiant du client à supprimer
+   * Supprime une voiture.
+   * @param id Identifiant de la voiture à supprimer
    * @returns Observable vide
    */
   remove(id: number): Observable<void> {

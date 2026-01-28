@@ -1,70 +1,181 @@
-﻿<!-- Liste scrollable de créneaux -->
-<div class="h-[560px] overflow-auto pr-1 space-y-2">
-  <button
-    *ngFor="let s of slots; trackBy: trackByTime"
-    type="button"
-    (click)="onClick(s.time, s.state)"
-    class="w-full text-left rounded-xl border px-3 py-3 transition
-           flex items-center gap-3
-           border-white/10
-           bg-white/5
-           hover:bg-white/10"
-    [ngClass]="{
-      'ring-1 ring-emerald-400/30': s.state === 'free' && canBook,
-      'ring-1 ring-rose-400/30': s.state === 'busy',
-      'ring-1 ring-amber-400/30': (s.state === 'free' && !canBook) || s.state === 'indispo',
-      'opacity-60 cursor-not-allowed': s.state !== 'free'
-    }"
-    [title]="(s.state === 'free' && !canBook)
-              ? (needService && needClient ? i18n.t('slot.chooseClientAndService')
-                 : (needService ? i18n.t('slot.chooseService') : i18n.t('slot.chooseClient')))
-              : (s.note || '')"
-  >
-    <!-- Heure -->
-    <span class="w-16 shrink-0 font-mono tracking-tight text-sm opacity-90">
-      {{ s.time }}
-    </span>
+﻿<!-- Conteneur avec overlay de chargement -->
+<div class="relative">
+  <!-- Overlay de chargement -->
+  <div *ngIf="isLoading" class="absolute inset-0 z-10 bg-slate-900/60 backdrop-blur-sm rounded-xl flex items-center justify-center">
+    <div class="flex flex-col items-center gap-3">
+      <svg class="animate-spin h-8 w-8 text-sky-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+      </svg>
+      <span class="text-sm text-slate-300">{{ i18n.t('common.loading') }}</span>
+    </div>
+  </div>
 
-    <!-- Libellé + infos -->
-    <div class="flex-1 min-w-0">
-      <div class="truncate"
-           [ngClass]="{
-             'text-slate-200': s.state === 'free',
-             'text-slate-300': s.state === 'busy',
-             'text-slate-400': s.state === 'past' || s.state === 'indispo'
-           }">
-        <ng-container [ngSwitch]="s.state">
-          <span *ngSwitchCase="'free'">{{ i18n.t('common.free') }}</span>
-          <span *ngSwitchCase="'busy'">
+  <!-- Liste des créneaux -->
+  <div class="space-y-2" [class.opacity-50]="isLoading" [class.pointer-events-none]="isLoading">
+  <ng-container *ngFor="let s of slots; trackBy: trackByTime">
+
+    <!-- Slot LIBRE -->
+    <div *ngIf="s.state === 'free'"
+      class="w-full text-left border px-4 py-3 transition flex items-center gap-4 rounded-xl"
+      [ngClass]="readOnly
+        ? 'border-emerald-500/20 bg-emerald-500/5 cursor-default'
+        : (canBook
+            ? 'border-emerald-500/20 bg-emerald-500/5 hover:bg-emerald-500/10 hover:border-emerald-500/40 cursor-pointer'
+            : 'border-amber-500/20 bg-amber-500/5 cursor-pointer')"
+      [title]="readOnly ? '' : (!canBook
+                ? (needService && needClient ? i18n.t('slot.chooseClientAndService')
+                   : (needService ? i18n.t('slot.chooseService') : i18n.t('slot.chooseClient')))
+                : '')"
+      (click)="onClick(s.time, s.state)"
+    >
+      <span class="w-16 shrink-0 font-mono text-sm font-semibold text-slate-300">{{ s.time }}</span>
+      <span class="flex-1 text-sm text-slate-400">{{ i18n.t('common.free') }}</span>
+      <span *ngIf="!readOnly" class="text-xs px-3 py-1.5 rounded-full border shrink-0 font-medium"
+            [ngClass]="canBook
+              ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-400'
+              : 'border-amber-500/30 bg-amber-500/10 text-amber-400'">
+        {{ canBook
+           ? (i18n.t('slot.reservePrefix') + (serviceType || i18n.t('slot.chooseService')))
+           : (needService && needClient ? i18n.t('slot.chooseClientAndService')
+             : (needService ? i18n.t('slot.chooseService') : i18n.t('slot.chooseClient'))) }}
+      </span>
+      <span *ngIf="readOnly" class="text-xs px-3 py-1.5 rounded-full border shrink-0 font-medium border-emerald-500/30 bg-emerald-500/10 text-emerald-400">
+        {{ i18n.t('common.free') }}
+      </span>
+    </div>
+
+    <!-- Slot OCCUPÉ (rendez-vous groupé) -->
+    <div *ngIf="s.state === 'busy'"
+      class="w-full text-left border px-4 py-4 rounded-xl border-rose-500/30 bg-gradient-to-r from-rose-500/10 to-rose-500/5"
+    >
+      <div class="flex items-start gap-4">
+        <!-- Plage horaire -->
+        <div class="shrink-0 text-center">
+          <div class="font-mono text-sm font-bold text-rose-300 bg-rose-500/20 px-3 py-1.5 rounded-lg">
+            {{ s.time }}
+          </div>
+          <div class="text-xs text-slate-500 my-1">→</div>
+          <div class="font-mono text-sm font-medium text-rose-400/80 bg-rose-500/10 px-3 py-1 rounded-lg">
+            {{ s.endTime }}
+          </div>
+        </div>
+
+        <!-- Infos client + service + voiture -->
+        <div class="flex-1 min-w-0">
+          <div class="font-semibold text-white truncate mb-1">
             {{ s.clientName || i18n.t('common.unknownClient') }}
-            <ng-container *ngIf="s.serviceType">{{ i18n.t('slot.sep') }} {{ s.serviceType }}</ng-container>
+          </div>
+          <div class="flex flex-wrap items-center gap-2 text-sm">
+            <span *ngIf="s.serviceType" class="text-rose-300/80 bg-rose-500/10 px-2 py-0.5 rounded">
+              {{ s.serviceType }}
+            </span>
+            <span *ngIf="s.carDescription" class="text-slate-400 bg-slate-700/50 px-2 py-0.5 rounded flex items-center gap-1">
+              <svg class="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M5 17h14v-5H5zm0 0v2h14v-2M7 12l2-5h6l2 5M7 17v2M17 17v2"/>
+              </svg>
+              {{ s.carDescription }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Durée + bouton supprimer -->
+        <div class="shrink-0 flex items-center gap-2">
+          <span class="text-xs px-2.5 py-1.5 rounded-full border border-rose-500/30 bg-rose-500/10 text-rose-300 font-medium">
+            {{ s.duration }} min
           </span>
-          <span *ngSwitchCase="'indispo'">{{ i18n.t('common.indispo') }}</span>
-          <span *ngSwitchCase="'past'">{{ i18n.t('common.past') }}</span>
-        </ng-container>
+          <button
+            *ngIf="s.appointmentId && !readOnly"
+            type="button"
+            (click)="onDelete($event, s.appointmentId)"
+            class="p-2 rounded-lg bg-rose-500/20 border border-rose-500/40 text-rose-300 hover:bg-rose-500/30 hover:text-rose-200 transition"
+            [title]="i18n.t('appointments.deleteAppointment') || 'Supprimer le rendez-vous'"
+          >
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M3 6h18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M10 11v6M14 11v6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+          </button>
+        </div>
       </div>
     </div>
 
-    <!-- Tag à droite -->
-    <span
-      class="text-xs px-2.5 py-1 rounded-full border"
-      [ngClass]="{
-        'border-emerald-400/40 bg-emerald-400/10 text-emerald-300': s.state === 'free' && canBook,
-        'border-rose-400/40 bg-rose-400/10 text-rose-300': s.state === 'busy',
-        'border-amber-400/40 bg-amber-400/10 text-amber-300': (s.state === 'free' && !canBook) || s.state === 'indispo',
-        'border-white/20 bg-white/5 text-slate-400': s.state === 'past'
-      }">
-      <ng-container [ngSwitch]="s.state">
-        <span *ngSwitchCase="'free'">
-          {{ canBook
-          ? (i18n.t('slot.reservePrefix') + (serviceType || i18n.t('slot.chooseService')))
-          : (needService && needClient ? i18n.t('slot.chooseClientAndService')
-            : (needService ? i18n.t('slot.chooseService') : i18n.t('slot.chooseClient'))) }}
+    <!-- Slot INDISPONIBLE -->
+    <div *ngIf="s.state === 'indispo'"
+      class="w-full text-left border px-4 py-3 transition flex items-center gap-4 rounded-xl border-amber-500/20 bg-amber-500/5"
+      [title]="s.note || ''"
+    >
+      <span class="w-16 shrink-0 font-mono text-sm font-medium text-amber-400/70">{{ s.time }}</span>
+      <span class="flex-1 text-sm text-amber-400/60">{{ i18n.t('common.indispo') }}</span>
+      <span class="text-xs px-3 py-1.5 rounded-full border border-amber-500/30 bg-amber-500/10 text-amber-400 shrink-0 font-medium">
+        {{ i18n.t('common.indispo') }}
+      </span>
+    </div>
+
+    <!-- Slot PASSÉ (avec ou sans rendez-vous) -->
+    <div *ngIf="s.state === 'past'"
+      class="w-full text-left border px-4 py-3 transition rounded-xl border-slate-700/30 bg-slate-800/30 opacity-60"
+    >
+      <!-- Rendez-vous passé avec détails -->
+      <div *ngIf="s.clientName" class="flex items-start gap-4">
+        <!-- Plage horaire -->
+        <div class="shrink-0 text-center">
+          <div class="font-mono text-sm font-medium text-slate-500 bg-slate-700/40 px-3 py-1.5 rounded-lg">
+            {{ s.time }}
+          </div>
+          <div class="text-xs text-slate-600 my-1">→</div>
+          <div class="font-mono text-sm text-slate-600 bg-slate-700/30 px-3 py-1 rounded-lg">
+            {{ s.endTime }}
+          </div>
+        </div>
+
+        <!-- Infos client + service + voiture -->
+        <div class="flex-1 min-w-0">
+          <div class="font-semibold text-slate-400 truncate mb-1 flex items-center gap-2">
+            <svg class="h-4 w-4 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            {{ s.clientName }}
+          </div>
+          <div class="flex flex-wrap items-center gap-2 text-sm">
+            <span *ngIf="s.serviceType" class="text-slate-500 bg-slate-700/40 px-2 py-0.5 rounded">
+              {{ s.serviceType }}
+            </span>
+            <span *ngIf="s.carDescription" class="text-slate-600 bg-slate-700/30 px-2 py-0.5 rounded flex items-center gap-1">
+              <svg class="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M5 17h14v-5H5zm0 0v2h14v-2M7 12l2-5h6l2 5M7 17v2M17 17v2"/>
+              </svg>
+              {{ s.carDescription }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Durée + badge passé -->
+        <div class="shrink-0 flex items-center gap-2">
+          <span class="text-xs px-2.5 py-1.5 rounded-full border border-slate-600/30 bg-slate-700/30 text-slate-500 font-medium">
+            {{ s.duration }} min
+          </span>
+          <span class="text-xs px-3 py-1.5 rounded-full border border-slate-600/30 bg-slate-700/30 text-slate-500 font-medium flex items-center gap-1">
+            <svg class="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            Passé
+          </span>
+        </div>
+      </div>
+
+      <!-- Créneau passé simple (sans rendez-vous) -->
+      <div *ngIf="!s.clientName" class="flex items-center gap-4">
+        <span class="w-16 shrink-0 font-mono text-sm font-medium text-slate-500">{{ s.time }}</span>
+        <span class="flex-1 text-sm text-slate-500">{{ i18n.t('common.past') }}</span>
+        <span class="text-xs px-3 py-1.5 rounded-full border border-slate-600/30 bg-slate-700/30 text-slate-500 shrink-0">
+          {{ i18n.t('common.past') }}
         </span>
-        <span *ngSwitchCase="'busy'">{{ i18n.t('common.busy') }}</span>
-        <span *ngSwitchCase="'indispo'">{{ i18n.t('common.indispo') }}</span>
-        <span *ngSwitchCase="'past'">{{ i18n.t('common.past') }}</span>
-      </ng-container>
-    </span>
-  </button>
+      </div>
+    </div>
+
+  </ng-container>
+</div>
 </div>

@@ -8,7 +8,7 @@
   SimpleChanges,
   inject
 } from '@angular/core';
-import { CommonModule, NgFor, NgIf, NgSwitch, NgSwitchCase } from '@angular/common';
+import { CommonModule, NgFor, NgIf } from '@angular/common';
 import { Appointment } from '../../models/appointment.model';
 import { I18nService } from '../../services/i18n.service';
 
@@ -16,17 +16,26 @@ type SlotState = 'free' | 'busy' | 'past' | 'indispo';
 
 interface SlotVM {
   time: string;              // "HH:mm" (début du slot affiché)
+  endTime?: string;          // "HH:mm" (fin du rendez-vous pour affichage groupé)
   state: SlotState;
   clientName?: string;
   serviceType?: string;
+  carDescription?: string;   // Description voiture
   note?: string;
+  appointmentId?: number;    // ID du rendez-vous pour la suppression
+  // Propriétés pour le regroupement visuel
+  isFirstOfGroup?: boolean;  // Premier slot d'un rendez-vous multi-slots
+  isLastOfGroup?: boolean;   // Dernier slot d'un rendez-vous multi-slots
+  isMiddleOfGroup?: boolean; // Slot au milieu d'un rendez-vous multi-slots
+  slotCount?: number;        // Nombre total de slots du rendez-vous
+  duration?: number;         // Durée totale du rendez-vous en minutes
 }
 
 @Component({
   standalone: true,
   selector: 'app-slot-picker',
   templateUrl: './slot-picker.component.html',
-  imports: [CommonModule, NgFor, NgIf, NgSwitch, NgSwitchCase],
+  imports: [CommonModule, NgFor, NgIf],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SlotPickerComponent implements OnChanges {
@@ -39,10 +48,13 @@ export class SlotPickerComponent implements OnChanges {
   @Input() canBook!: boolean;
   @Input() needService!: boolean;
   @Input() needClient!: boolean;
+  @Input() isLoading: boolean = false;
+  @Input() readOnly: boolean = false;        // Mode lecture seule (dashboard)
 
   // ---------- Outputs ----------
   @Output() pick = new EventEmitter<string>();                         // émet l'heure "HH:mm"
   @Output() blocked = new EventEmitter<'service' | 'client' | 'both'>();
+  @Output() deleteAppointment = new EventEmitter<number>();            // émet l'ID du rdv à supprimer
 
   // ---------- Etat local ----------
   slots: SlotVM[] = [];
@@ -89,6 +101,9 @@ export class SlotPickerComponent implements OnChanges {
 
     const out: SlotVM[] = [];
 
+    // Set pour tracker les rendez-vous déjà affichés
+    const displayedAppointments = new Set<number>();
+
     for (let h = this.START_HOUR; h < this.END_HOUR; h++) {
       for (let m = 0; m < 60; m += this.DISPLAY_STEP) {
         const time = this.hm(h, m);
@@ -96,7 +111,7 @@ export class SlotPickerComponent implements OnChanges {
         const slotEndDisplay = slotStart + this.DISPLAY_STEP;      // pour "busy" visuel
         const slotEndReserve = slotStart + this.duration;          // pour réserver
 
-        const isPast = this.date === todayStr && slotStart < nowMin;
+        const isPast = this.date < todayStr || (this.date === todayStr && slotStart < nowMin);
 
         // RDV du même pont qui chevauchent l'affichage (15 min)
         const overlapAppt = this.findOverlap(slotStart, slotEndDisplay);
@@ -104,16 +119,45 @@ export class SlotPickerComponent implements OnChanges {
         // Fenêtre complète disponible pour la durée demandée ?
         const windowFree = this.isWindowFree(slotStart, slotEndReserve);
 
-        if (isPast) {
+        // Afficher les rendez-vous même s'ils sont passés
+        if (overlapAppt) {
+          const apptStart = this.parseHm(overlapAppt.time);
+          const apptDuration = overlapAppt.duration || this.DISPLAY_STEP;
+          const apptEnd = apptStart + apptDuration;
+
+          // Afficher un seul slot groupé pour tout le rendez-vous
+          const isFirstOfGroup = slotStart === apptStart;
+
+          if (isFirstOfGroup && overlapAppt.id && !displayedAppointments.has(overlapAppt.id)) {
+            // Marquer ce rendez-vous comme affiché
+            displayedAppointments.add(overlapAppt.id);
+
+            // Calculer l'heure de fin
+            const endHour = Math.floor(apptEnd / 60);
+            const endMin = apptEnd % 60;
+            const endTime = this.hm(endHour, endMin);
+
+            out.push({
+              time,
+              endTime,
+              state: isPast ? 'past' : 'busy',
+              clientName: overlapAppt.clientName,
+              serviceType: overlapAppt.serviceType,
+              carDescription: overlapAppt.carDescription,
+              appointmentId: overlapAppt.id,
+              isFirstOfGroup: true,
+              isLastOfGroup: true,
+              isMiddleOfGroup: false,
+              slotCount: Math.ceil(apptDuration / this.DISPLAY_STEP),
+              duration: apptDuration
+            });
+          }
+          // Ne rien ajouter pour les slots suivants du même rendez-vous
+        } else if (isPast) {
+          // Créneaux passés aujourd'hui ou dates antérieures - pas de réservation possible
           out.push({ time, state: 'past' });
-        } else if (overlapAppt) {
-          out.push({
-            time,
-            state: 'busy',
-            clientName: overlapAppt.clientName,
-            serviceType: overlapAppt.serviceType
-          });
-        } else if (!windowFree) {
+        } else if (!windowFree && !this.readOnly) {
+          // En mode readOnly (Dashboard), on ignore la vérification de durée
           out.push({
             time,
             state: 'indispo',
@@ -171,10 +215,15 @@ export class SlotPickerComponent implements OnChanges {
     return h * 60 + (m || 0);
   }
 
-  trackByTime(_: number, s: SlotVM) { return s.time; }
+  trackByTime(_: number, s: SlotVM) {
+    return `${s.time}-${s.state}-${s.appointmentId || 'free'}`;
+  }
 
   // ---------- Interaction ----------
   onClick(time: string, state: SlotState) {
+    // Mode lecture seule = pas de clic
+    if (this.readOnly) return;
+
     // On ne clique que sur 'free'
     if (state !== 'free') return;
 
@@ -188,5 +237,15 @@ export class SlotPickerComponent implements OnChanges {
     }
 
     this.pick.emit(time);
+  }
+
+  onDelete(event: Event, appointmentId: number | undefined) {
+    // Mode lecture seule = pas de suppression
+    if (this.readOnly) return;
+
+    event.stopPropagation(); // Empêcher le clic sur le bouton parent
+    if (appointmentId) {
+      this.deleteAppointment.emit(appointmentId);
+    }
   }
 }
