@@ -16,7 +16,7 @@ export const environment = {
 
   // Configuration Keycloak (Authentification)
   keycloak: {
-    url: 'https://auth.bassenge-pneus.com',
+    url: 'https://bassenge-pneus.com/auth',
     realm: 'garage-realm',
     clientId: 'garagepneu-front',
     // Options SSO
