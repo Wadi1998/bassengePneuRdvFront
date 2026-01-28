@@ -181,7 +181,7 @@
             [class.border-rose-400/40]="!serviceValid && showServiceError"
             [class.focus:ring-white/20]="serviceValid"
             [class.focus:ring-rose-400/30]="!serviceValid"
-            placeholder="{{ i18n.t('appointments.servicePlaceholder') }}"
+            placeholder="{{ i18n.t('appointments.servicePlaceholder') }} *"
             [(ngModel)]="serviceType"
             (ngModelChange)="showServiceError = false"
           />
