@@ -36,8 +36,9 @@
     </nav>
 
 
-    <div class="px-4 py-3 border-t border-white/10 text-xs text-slate-400">
-      {{ i18n.t('app.footerBy', { year: (today | date:'yyyy') }) }}
+    <div class="px-4 py-3 border-t border-white/10 text-xs text-slate-400 space-y-1">
+      <div>{{ i18n.t('app.footerBy', { year: (today | date:'yyyy') }) }}</div>
+      <div class="text-slate-500">v{{ version }}</div>
     </div>
   </aside>
 
@@ -150,8 +151,9 @@
           <span>{{ i18n.t('common.logout') || 'Déconnexion' }}</span>
         </button>
 
-        <div class="text-xs text-slate-400 text-center pt-2">
-          {{ i18n.t('app.footerBy', { year: (today | date:'yyyy') }) }}
+        <div class="text-xs text-slate-400 text-center pt-2 space-y-1">
+          <div>{{ i18n.t('app.footerBy', { year: (today | date:'yyyy') }) }}</div>
+          <div class="text-slate-500">v{{ version }}</div>
         </div>
       </div>
     </div>

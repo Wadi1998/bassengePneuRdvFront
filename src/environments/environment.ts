@@ -26,7 +26,7 @@ export const environment = {
   // Configuration de l'application
   app: {
     name: 'Bassenge Pneu - RDV',
-    version: '1.0.0-dev',
+    version: '1.1.0',
     defaultLanguage: 'fr',
     supportedLanguages: ['fr', 'nl', 'en']
   },

@@ -1,6 +1,6 @@
 {
   "name": "garage-pneu",
-  "version": "0.0.0",
+  "version": "1.1.0",
   "scripts": {
     "start": "ng serve",
     "start:prod": "ng serve --configuration=production",

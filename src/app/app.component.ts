@@ -3,6 +3,7 @@ import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { I18nService } from './services/i18n.service';
 import { KeycloakService } from './services/keycloak.service';
+import { environment } from '../environments/environment';
 
 @Component({
   standalone: true,
@@ -13,6 +14,7 @@ import { KeycloakService } from './services/keycloak.service';
 export class AppComponent implements OnInit {
   open = false;          // pour le menu mobile
   today = new Date();
+  version = environment.app.version;
 
   // Services
   public i18n = inject(I18nService);
