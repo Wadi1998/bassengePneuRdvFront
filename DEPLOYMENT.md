@@ -24,7 +24,38 @@
 9. [Maintenance](#-maintenance)
 10. [Dépannage](#-dépannage)
 
-**⏱️ Durée totale : 40 minutes**
+**⏱️ Durée totale : 40 minutes (ou 10 minutes avec le script automatique !)**
+
+---
+
+## ⚡ INSTALLATION RAPIDE (RECOMMANDÉ)
+
+**Si vous avez la flemme de lancer des commandes une par une**, utilisez le script automatique ! 🚀
+
+### Sur votre VPS, lancez UNE SEULE commande :
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/Wadi1998/bassengePneuRdvFront/main/scripts/setup-frontend.sh | bash
+```
+
+**C'est tout !** Le script va :
+- ✅ Installer Docker si nécessaire
+- ✅ Créer le réseau Docker
+- ✅ Générer la clé SSH
+- ✅ Cloner le repository
+- ✅ Construire et lancer le conteneur
+
+**⏱️ Durée : ~10 minutes**
+
+À la fin, le script affiche la clé SSH à copier pour GitHub Secrets.
+
+**Ensuite, passez directement à l'[ÉTAPE 3](#-étape-3--configuration-github-secrets-5-min) pour configurer GitHub.**
+
+---
+
+## 📖 INSTALLATION MANUELLE (DÉTAILLÉE)
+
+Si vous préférez faire étape par étape, suivez les instructions ci-dessous.
 
 ---
 
