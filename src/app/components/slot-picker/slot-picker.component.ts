@@ -111,7 +111,7 @@ export class SlotPickerComponent implements OnChanges {
         const slotEndDisplay = slotStart + this.DISPLAY_STEP;      // pour "busy" visuel
         const slotEndReserve = slotStart + this.duration;          // pour réserver
 
-        const isPast = this.date === todayStr && slotStart < nowMin;
+        const isPast = this.date < todayStr || (this.date === todayStr && slotStart < nowMin);
 
         // RDV du même pont qui chevauchent l'affichage (15 min)
         const overlapAppt = this.findOverlap(slotStart, slotEndDisplay);
@@ -119,9 +119,8 @@ export class SlotPickerComponent implements OnChanges {
         // Fenêtre complète disponible pour la durée demandée ?
         const windowFree = this.isWindowFree(slotStart, slotEndReserve);
 
-        if (isPast) {
-          out.push({ time, state: 'past' });
-        } else if (overlapAppt) {
+        // Afficher les rendez-vous même s'ils sont passés
+        if (overlapAppt) {
           const apptStart = this.parseHm(overlapAppt.time);
           const apptDuration = overlapAppt.duration || this.DISPLAY_STEP;
           const apptEnd = apptStart + apptDuration;
@@ -141,7 +140,7 @@ export class SlotPickerComponent implements OnChanges {
             out.push({
               time,
               endTime,
-              state: 'busy',
+              state: isPast ? 'past' : 'busy',
               clientName: overlapAppt.clientName,
               serviceType: overlapAppt.serviceType,
               carDescription: overlapAppt.carDescription,
@@ -154,6 +153,9 @@ export class SlotPickerComponent implements OnChanges {
             });
           }
           // Ne rien ajouter pour les slots suivants du même rendez-vous
+        } else if (isPast) {
+          // Créneaux passés aujourd'hui ou dates antérieures - pas de réservation possible
+          out.push({ time, state: 'past' });
         } else if (!windowFree && !this.readOnly) {
           // En mode readOnly (Dashboard), on ignore la vérification de durée
           out.push({

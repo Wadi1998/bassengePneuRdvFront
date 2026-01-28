@@ -72,9 +72,15 @@
         </div>
       </div>
 
-      <!-- Séparateur pour véhicule optionnel -->
+      <!-- Séparateur pour véhicule OBLIGATOIRE -->
       <div class="md:col-span-12">
-        <p class="text-sm text-slate-400 border-t border-white/10 pt-4 mt-2">{{ i18n.t('clients.optionalVehicle') }}</p>
+        <p class="text-sm font-medium text-amber-300 border-t border-white/10 pt-4 mt-2 flex items-center gap-2">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 13l1.5-4.5A2 2 0 0 1 6.4 7h11.2a2 2 0 0 1 1.9 1.5L21 13"/>
+            <path d="M5 19a1 1 0 1 0 0-2 1 1 0 0 0 0 2zM19 19a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"/>
+          </svg>
+          <span>Véhicule (obligatoire)</span>
+        </p>
       </div>
 
       <!-- Marque -->
@@ -87,7 +93,10 @@
               <path d="M5 19a1 1 0 1 0 0-2 1 1 0 0 0 0 2zM19 19a1 1 0 1 0 0-2 1 1 0 0 0 0 2z" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
           </span>
-          <input formControlName="carBrand" placeholder="{{ i18n.t('clients.brandPlaceholder') }}" class="field-input" />
+          <input formControlName="carBrand" placeholder="{{ i18n.t('clients.brandPlaceholder') }} *" class="field-input" />
+        </div>
+        <div class="text-xs text-red-400 mt-1" *ngIf="form.get('carBrand')?.touched && form.get('carBrand')?.invalid">
+          {{ i18n.t('clients.brandRequired') }}
         </div>
       </div>
 
@@ -102,7 +111,10 @@
               <circle cx="17" cy="18" r="2" stroke="currentColor" stroke-width="1.3"/>
             </svg>
           </span>
-          <input formControlName="carModel" placeholder="{{ i18n.t('clients.modelPlaceholder') }}" class="field-input" />
+          <input formControlName="carModel" placeholder="{{ i18n.t('clients.modelPlaceholder') }} *" class="field-input" />
+        </div>
+        <div class="text-xs text-red-400 mt-1" *ngIf="form.get('carModel')?.touched && form.get('carModel')?.invalid">
+          {{ i18n.t('clients.modelRequired') }}
         </div>
       </div>
 

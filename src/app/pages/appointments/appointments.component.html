@@ -132,7 +132,7 @@
             </svg>
           </span>
           <input type="date" class="h-11 w-full pl-9 pr-3 rounded-xl bg-white/5 border border-white/10 focus:outline-none focus:ring-2 focus:ring-white/20"
-                 [ngModel]="date" (ngModelChange)="setDate($event)" />
+                 [ngModel]="date" (ngModelChange)="setDate($event)" [min]="minDate" />
         </div>
 
         <!-- Bouton suivant -->
@@ -367,11 +367,36 @@
     </div>
   </div>
 
-  <!-- Modal de confirmation -->
+  <!-- Modal de confirmation pour suppression -->
   <app-confirm-dialog
     [isOpen]="isConfirmOpen"
     [data]="confirmData"
     (confirmed)="onConfirmDelete()"
     (cancelled)="onCancelDelete()"
   ></app-confirm-dialog>
+
+  <!-- Modal de confirmation pour création -->
+  <app-confirm-dialog
+    [isOpen]="isCreateConfirmOpen"
+    [data]="createConfirmData"
+    (confirmed)="onConfirmCreate()"
+    (cancelled)="onCancelCreate()"
+  ></app-confirm-dialog>
+
+  <!-- Alerte visuelle pour date passée -->
+  <div *ngIf="isPastDate" class="fixed bottom-4 right-4 z-50 max-w-md">
+    <div class="rounded-xl bg-amber-500/90 backdrop-blur border border-amber-400/30 p-4 shadow-2xl">
+      <div class="flex items-start gap-3">
+        <div class="shrink-0">
+          <svg class="h-6 w-6 text-amber-900" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 9v4m0 4h.01M3 12a9 9 0 1 0 18 0 9 9 0 1 0-18 0z"/>
+          </svg>
+        </div>
+        <div class="flex-1">
+          <h3 class="font-semibold text-amber-900 mb-1">Date passée</h3>
+          <p class="text-sm text-amber-800">Vous consultez une date passée. Les rendez-vous ne peuvent être créés que pour aujourd'hui ou les dates futures.</p>
+        </div>
+      </div>
+    </div>
+  </div>
 </section>

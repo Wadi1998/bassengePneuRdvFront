@@ -70,7 +70,7 @@ export interface ConfirmDialogData {
           <!-- Message -->
           <p
             [id]="'confirm-desc-' + dialogId"
-            class="text-sm text-slate-300 text-center mb-6"
+            class="text-sm text-slate-300 text-left mb-6 whitespace-pre-line"
           >
             {{ data?.message }}
           </p>

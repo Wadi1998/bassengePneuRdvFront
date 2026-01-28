@@ -137,8 +137,8 @@ export class ClientsComponent implements OnInit, AfterViewInit, OnDestroy {
       firstName: ['', Validators.required],
       name: ['', Validators.required],
       phone: ['', [Validators.required, bePhoneLibValidator()]],
-      carBrand: [''],
-      carModel: [''],
+      carBrand: ['', Validators.required],
+      carModel: ['', Validators.required],
       carYear: [''],
       carPlate: ['']
     });
@@ -536,6 +536,10 @@ export class ClientsComponent implements OnInit, AfterViewInit, OnDestroy {
       this.toastr.error(this.i18n.t('clients.nameRequired'), this.i18n.t(actionKey));
     } else if (controls['phone']?.invalid) {
       this.toastr.error(this.i18n.t('clients.phoneInvalid'), this.i18n.t(actionKey));
+    } else if (controls['carBrand']?.invalid) {
+      this.toastr.error('La marque de la voiture est obligatoire', this.i18n.t(actionKey));
+    } else if (controls['carModel']?.invalid) {
+      this.toastr.error('Le modèle de la voiture est obligatoire', this.i18n.t(actionKey));
     }
 
     return false;

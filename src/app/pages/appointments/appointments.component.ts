@@ -78,10 +78,15 @@ export class AppointmentsComponent implements OnInit, OnDestroy {
   // États UI
   isLoading = false;
 
-  // Modal de confirmation
+  // Modal de confirmation pour suppression
   isConfirmOpen = false;
   confirmData: ConfirmDialogData | null = null;
   private pendingDeleteId: number | null = null;
+
+  // Modal de confirmation pour création
+  isCreateConfirmOpen = false;
+  createConfirmData: ConfirmDialogData | null = null;
+  private pendingCreate: { bay: 'A' | 'B', time: string } | null = null;
 
   // Références aux slot-pickers
   @ViewChildren(SlotPickerComponent) private pickers!: QueryList<SlotPickerComponent>;
@@ -131,6 +136,17 @@ export class AppointmentsComponent implements OnInit, OnDestroy {
   /** Vérifie si la date sélectionnée est aujourd'hui */
   get isToday(): boolean {
     return this.date === this.formatDate(new Date());
+  }
+
+  /** Vérifie si la date sélectionnée est dans le passé */
+  get isPastDate(): boolean {
+    const today = this.formatDate(new Date());
+    return this.date < today;
+  }
+
+  /** Date minimale pour le sélecteur (aujourd'hui) */
+  get minDate(): string {
+    return this.formatDate(new Date());
   }
 
   // ═══════════════════════════════════════════════════════════════════════════
@@ -338,6 +354,12 @@ export class AppointmentsComponent implements OnInit, OnDestroy {
   private async createFor(bay: 'A' | 'B', time: string): Promise<void> {
     if (this.isLoading) return;
 
+    // Vérifier si la date est dans le passé
+    if (this.isPastDate) {
+      this.toastr.error('Impossible de prendre un rendez-vous sur une date passée');
+      return;
+    }
+
     if (!this.selectedClient) {
       this.toastr.warning(this.i18n.t('appointments.toasts.chooseClientBefore'));
       return;
@@ -354,6 +376,41 @@ export class AppointmentsComponent implements OnInit, OnDestroy {
       return;
     }
 
+    // Demander confirmation avant de créer le rendez-vous
+    this.pendingCreate = { bay, time };
+    const carInfo = this.selectedCar ? this.formatCarInfo(this.selectedCar) : 'Aucune voiture';
+    const dateFormatted = this.dateObj.toLocaleDateString('fr-BE', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+
+    this.createConfirmData = {
+      title: 'Confirmer le rendez-vous',
+      message: `
+📋 Client: ${this.fullName(this.selectedClient)}
+
+🚗 Voiture: ${carInfo}
+
+🔧 Service: ${this.serviceType}
+
+📅 Date: ${dateFormatted}
+
+⏰ Heure: ${time}
+
+⏱️ Durée: ${this.duration} minutes
+
+🏗️ Pont: ${bay}
+      `.trim(),
+      confirmText: 'Confirmer',
+      cancelText: 'Annuler',
+      type: 'info'
+    };
+    this.isCreateConfirmOpen = true;
+  }
+
+  async onConfirmCreate(): Promise<void> {
+    this.isCreateConfirmOpen = false;
+
+    if (!this.pendingCreate || !this.selectedClient) return;
+
+    const { bay, time } = this.pendingCreate;
     this.isLoading = true;
 
     const request: AppointmentRequest = {
@@ -369,6 +426,14 @@ export class AppointmentsComponent implements OnInit, OnDestroy {
     try {
       await lastValueFrom(this.appts.create(request));
       await this.refresh();
+
+      // Réinitialiser le formulaire après succès
+      this.serviceType = '';
+      this.showServiceError = false;
+
+      // Scroll vers le haut pour voir le rendez-vous créé
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+
       this.toastr.success(
         this.i18n.t('appointments.toasts.booked', { time, bay }),
         this.i18n.t('appointments.toasts.bookedTitle')
@@ -377,7 +442,14 @@ export class AppointmentsComponent implements OnInit, OnDestroy {
       this.toastr.error(this.i18n.t('appointments.toasts.bookError'));
       this.isLoading = false;
       this.cdr.markForCheck();
+    } finally {
+      this.pendingCreate = null;
     }
+  }
+
+  onCancelCreate(): void {
+    this.isCreateConfirmOpen = false;
+    this.pendingCreate = null;
   }
 
   onBlocked(reason: 'service' | 'client' | 'both'): void {

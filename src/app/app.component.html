@@ -4,11 +4,8 @@
   <aside *ngIf="isLoggedIn()" class="hidden md:flex md:flex-col md:w-72
                 bg-gradient-to-b from-brand-mid to-brand-dark border-r border-white/10">
     <!-- Logo -->
-    <div class="h-16 flex items-center px-5 border-b border-white/10">
-      <div class="flex items-center gap-3">
-        <img src="assets/logo.png" class="h-10 w-auto" alt="Logo Bassenge Pneus">
-        <span class="text-lg font-extrabold tracking-tight">{{ i18n.t('app.title') }}</span>
-      </div>
+    <div class="h-16 flex items-center justify-center px-5 border-b border-white/10">
+      <img src="assets/logo.png" class="h-10 w-auto" alt="Logo">
     </div>
 
     <!-- Nav -->
@@ -59,7 +56,6 @@
 
         <div class="flex items-center gap-2">
           <img src="assets/logo.png" class="h-8 w-auto md:hidden" alt="Logo">
-          <span class="font-semibold">{{ i18n.t('app.garage') }}</span>
         </div>
 
         <div class="ml-auto hidden sm:flex items-center gap-4 text-sm text-slate-300">
@@ -102,10 +98,7 @@
     <div class="absolute inset-y-0 left-0 w-80 bg-gradient-to-b from-brand-mid to-brand-dark text-slate-100 flex flex-col shadow-2xl">
       <!-- Header du drawer -->
       <div class="flex items-center justify-between p-4 border-b border-white/10">
-        <div class="flex items-center gap-3">
-          <img src="assets/logo.png" class="h-10 w-auto" alt="Logo Bassenge Pneus">
-          <span class="font-extrabold text-base">{{ i18n.t('app.title') }}</span>
-        </div>
+        <img src="assets/logo.png" class="h-10 w-auto" alt="Logo">
         <button (click)="open=false" class="h-10 w-10 rounded-lg bg-white/10 flex items-center justify-center hover:bg-white/20 transition">
           <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.6">
             <path d="M6 6l12 12M6 18L18 6" />

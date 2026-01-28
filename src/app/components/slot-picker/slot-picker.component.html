@@ -114,15 +114,66 @@
       </span>
     </div>
 
-    <!-- Slot PASSÉ -->
+    <!-- Slot PASSÉ (avec ou sans rendez-vous) -->
     <div *ngIf="s.state === 'past'"
-      class="w-full text-left border px-4 py-3 transition flex items-center gap-4 rounded-xl border-slate-700/30 bg-slate-800/30 opacity-50"
+      class="w-full text-left border px-4 py-3 transition rounded-xl border-slate-700/30 bg-slate-800/30 opacity-60"
     >
-      <span class="w-16 shrink-0 font-mono text-sm font-medium text-slate-500">{{ s.time }}</span>
-      <span class="flex-1 text-sm text-slate-500">{{ i18n.t('common.past') }}</span>
-      <span class="text-xs px-3 py-1.5 rounded-full border border-slate-600/30 bg-slate-700/30 text-slate-500 shrink-0">
-        {{ i18n.t('common.past') }}
-      </span>
+      <!-- Rendez-vous passé avec détails -->
+      <div *ngIf="s.clientName" class="flex items-start gap-4">
+        <!-- Plage horaire -->
+        <div class="shrink-0 text-center">
+          <div class="font-mono text-sm font-medium text-slate-500 bg-slate-700/40 px-3 py-1.5 rounded-lg">
+            {{ s.time }}
+          </div>
+          <div class="text-xs text-slate-600 my-1">→</div>
+          <div class="font-mono text-sm text-slate-600 bg-slate-700/30 px-3 py-1 rounded-lg">
+            {{ s.endTime }}
+          </div>
+        </div>
+
+        <!-- Infos client + service + voiture -->
+        <div class="flex-1 min-w-0">
+          <div class="font-semibold text-slate-400 truncate mb-1 flex items-center gap-2">
+            <svg class="h-4 w-4 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            {{ s.clientName }}
+          </div>
+          <div class="flex flex-wrap items-center gap-2 text-sm">
+            <span *ngIf="s.serviceType" class="text-slate-500 bg-slate-700/40 px-2 py-0.5 rounded">
+              {{ s.serviceType }}
+            </span>
+            <span *ngIf="s.carDescription" class="text-slate-600 bg-slate-700/30 px-2 py-0.5 rounded flex items-center gap-1">
+              <svg class="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M5 17h14v-5H5zm0 0v2h14v-2M7 12l2-5h6l2 5M7 17v2M17 17v2"/>
+              </svg>
+              {{ s.carDescription }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Durée + badge passé -->
+        <div class="shrink-0 flex items-center gap-2">
+          <span class="text-xs px-2.5 py-1.5 rounded-full border border-slate-600/30 bg-slate-700/30 text-slate-500 font-medium">
+            {{ s.duration }} min
+          </span>
+          <span class="text-xs px-3 py-1.5 rounded-full border border-slate-600/30 bg-slate-700/30 text-slate-500 font-medium flex items-center gap-1">
+            <svg class="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            Passé
+          </span>
+        </div>
+      </div>
+
+      <!-- Créneau passé simple (sans rendez-vous) -->
+      <div *ngIf="!s.clientName" class="flex items-center gap-4">
+        <span class="w-16 shrink-0 font-mono text-sm font-medium text-slate-500">{{ s.time }}</span>
+        <span class="flex-1 text-sm text-slate-500">{{ i18n.t('common.past') }}</span>
+        <span class="text-xs px-3 py-1.5 rounded-full border border-slate-600/30 bg-slate-700/30 text-slate-500 shrink-0">
+          {{ i18n.t('common.past') }}
+        </span>
+      </div>
     </div>
 
   </ng-container>
